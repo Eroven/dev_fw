@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration scan="true" scanPeriod="60000" debug="true">
+
+    <property name="logPath" value="f:/tmp/logs"/>
+    <property name="logback.charset" value="utf-8"/>
+
+    <contextName>logTest</contextName>
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger -%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="fileAppender" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator class="me.zhaotb.log.LoggerNameDiscriminator"/>
+        <sift>
+            <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <Prudent>true</Prudent>
+                <rollingPolicy
+                        class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                    <FileNamePattern>
+                        ${logPath}/${loggerName}/%d{yyyy_MM_dd}.log
+                    </FileNamePattern>
+                </rollingPolicy>
+                <encoder>
+                    <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                    <charset>${logback.charset}</charset>
+                </encoder>
+            </appender>
+        </sift>
+    </appender>
+
+    <appender name="AsyncFileAppender" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="fileAppender"/>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="fileAppender"/>
+    </root>
+
+    <logger name="me.zhaotb.log.async" level="debug">
+        <appender-ref ref="AsyncFileAppender"/>
+    </logger>
+</configuration>

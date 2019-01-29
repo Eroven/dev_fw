@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<body>
+
+    <form action="http://jq.server.com:9001/authorization/login" method="post" style="">
+        <label>user: </label><input name="user"/><br>
+        <label>password: </label><input name="password"/><br>
+        <input type="submit" value="确认"/>
+    </form>
+    <label>授权信息如下:</label><br>
+    <label id="scope"></label>
+</body>
+<script type="text/javascript">
+    $.get("scope", function(data){
+        console.info("scope:" + data);
+        console.info($("scope"));
+        $("#scope").text(data);
+    });
+</script>
+</html>
