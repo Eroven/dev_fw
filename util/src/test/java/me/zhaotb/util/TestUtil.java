@@ -1,5 +1,8 @@
 package me.zhaotb.util;
 
+import me.zhaotb.framework.util.FileUtil;
+import me.zhaotb.framework.util.OutOfDiskSpaceException;
+import me.zhaotb.framework.util.StringUtil;
 import me.zhaotb.framework.util.ZipUtil;
 import org.apache.commons.net.ftp.FTPClient;
 import org.junit.Test;
@@ -23,6 +26,41 @@ import java.util.HashSet;
  * @date 2018/11/28
  */
 public class TestUtil {
+
+    @Test
+    public void testMatchStr(){
+        boolean m = StringUtil.matchStr("abcdefg", "abc*f");
+        System.out.println(m);
+    }
+
+    @Test
+    public void names() throws IOException {
+        String s = FileUtil.uniqueName("F:\\tmp\\enterbill\\UNACCT_ITEM_20181201_200_0.txt");
+        System.out.println(s);
+        new File(s).createNewFile();
+        s = FileUtil.uniqueName(s);
+        System.out.println(s);
+    }
+
+    @Test
+    public void t(){
+        System.out.println(1 << 20);
+        System.out.println((7396939 / (1 << 20)));
+
+        System.out.println(64 * (7396939 / (1 << 20)) );
+    }
+
+    @Test
+    public void testMove(){
+        File f = new File("F:\\tmp\\enterbill\\UNACCT_ITEM_20181201_200_0.txt");
+        File df = new File("F:\\tmp\\enterbill\\move\\UNACCT_ITEM_20181201_200_0.txt");
+        try {
+            boolean move = FileUtil.move(df, f);
+            System.out.println(move);
+        } catch (OutOfDiskSpaceException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void testZip() throws IOException {

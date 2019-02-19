@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>index</title>
+</head>
+<body>
+
+<div id="app">
+    {{ message }}
+    <br>
+    <input type="text" v-model="message"><br>
+    <span v-bind:title="title">
+		稍等片刻，标题就会在鼠标附近显示
+  </span>
+
+    <br>
+    <span v-if="seen">看见了</span>
+    <br>
+
+    <ol>
+        <li v-for="todo in todos">
+            {{ todo.text}}
+        </li>
+    </ol>
+
+    <br>
+
+    <button :disabled="isButtonDisabled" @click="reverseMessage">逆转消息</button>
+    <br>
+    <ol>
+        <todo-item v-for="todo in todos" v-bind:todo="todo" ></todo-item>
+    </ol>
+
+    <br>
+    <span>{{reverseMessageProp}}</span>
+
+    <br>
+    <span>{{fullName}}</span>
+    <br>
+
+    <p>提一个Yes/No的问题：
+        <input v-model="question">
+    </p>
+    <p>答案： {{answer}}</p>
+
+    <div class='static' v-bind:class="{active: isActive, 'text-danger': hasError}">
+        DIV
+    </div>
+
+    <div v-bind:class="classObject">DIV2</div>
+
+    <template v-if="ok">
+        <h1>Title</h1>
+        <p>Paragraph 1</p>
+        <p>Paragraph 2</p>
+    </template>
+
+    <div v-if="Math.random() > 0.5">
+        Now, you see me.
+    </div>
+    <div v-else>
+        Now you don't
+    </div>
+
+    <div v-bind:style="{border: '1px solid #00f', width: '400px', height: '200px'}">
+        <span>{{login.loginTypeDes}}<input v-bind:placeholder="login.placeHolder"></span>
+        <button v-on:click="changeLoginType">切换登录方式</button>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+<script type="text/javascript">
+    Vue.component('todo-item', {
+        props: ['todo'],
+        template: '<li>{{ todo.text }}</li>'
+    });
+    var app = new Vue({
+        el: '#app',
+        data: {
+            login: {
+                loginTypeDes: '用户名',
+                placeHolder: '请输入用户名'
+            },
+            loginByUsername: {
+                loginTypeDes: '用户名',
+                placeHolder: '请输入用户名'
+            },
+            loginByEmail: {
+                loginTypeDes: '邮箱',
+                placeHolder: '请输入邮箱'
+            },
+            ok:true,
+            isActive: true,
+            hasError: null,
+            message: 'Hello Vue.js!',
+            title: 'You loaded this page on ' + new Date().toLocaleString(),
+            seen: true,
+            todos: [
+                {id: 1, text: 'A'},
+                {id: 2, text: 'B'}
+            ],
+            isButtonDisabled: false,
+            firstName: 'Foo',
+            lastName: 'Bar',
+            // fullName: 'Foo Bar'
+            question: '',
+            answer: ''
+        },
+        methods: {
+            reverseMessage: function () {
+                this.message = this.message.split('').reverse().join('');
+            },
+            getAnswer: function(){
+                if (this.question.indexOf('?') === -1 && this.question.indexOf('？') === -1) {
+                    this.answer = '问题通常以问号结尾. :-)';
+                    return;
+                }
+                this.answer = '思考中...';
+                var vm = this;
+                axios.get('https://yesno.wtf/api')
+                    .then(function(response){
+                        vm.answer = _.capitalize(response.data.answer);
+                    })
+                    .catch(function(error){
+                        vm.answer = '错误！不能访问API。' + error;
+                    })
+            },
+            changeLoginType: function(){
+                if (this.login == this.loginByUsername) {
+                    this.login = this.loginByEmail;
+                }else{
+                    this.login = this.loginByUsername;
+                }
+            }
+        },
+        created: function () {
+            // _.debounce is a function provided by lodash to limit how
+            // often a particularly expensive operation can be run.
+            // In this case, we want to limit how often we access
+            // yesno.wtf/api, waiting until the user has completely
+            // finished typing before making the ajax request. To learn
+            // more about the _.debounce function (and its cousin
+            // _.throttle), visit: https://lodash.com/docs#debounce
+            this.debouncedGetAnswer = _.debounce(this.getAnswer, 500);
+        },
+        computed: {
+            reverseMessageProp: function() {
+                return this.message.split('').reverse().join('');
+            },
+            fullName: function(){
+                return this.firstName + ' ' + this.lastName;
+            },
+            classObject: function(){
+                return {
+                    active: this.isActive && !this.hasError,
+                    'text-danger': this.hasError && this.hasError.type === 'fatal'
+                }
+            }
+        },
+        watch: {
+            // firstName: function(val){
+            // 	this.fullName = val + ' ' + this.lastName;
+            // },
+            // lastName: function(val){
+            // 	this.fullName = this.firstName + ' ' + val;
+            // }
+            question: function(newQues, oldQues){
+                this.answer = '等待停止输入....';
+                this.debouncedGetAnswer();
+            }
+        }
+    })
+</script>
+</body>
+</html>

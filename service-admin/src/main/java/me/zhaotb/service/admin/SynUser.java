@@ -25,11 +25,12 @@ public class SynUser {
         this.pwd = pwd;
     }
 
-    synchronized public void print(String name, String pwd){
+    public synchronized void print(String name, String pwd){
         this.name = name;
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             e.printStackTrace();
         }
         this.pwd = pwd;

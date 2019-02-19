@@ -3,6 +3,7 @@ package me.zhaotb.framework.util;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class StringUtil extends StringUtils {
 	
@@ -70,5 +71,20 @@ public class StringUtil extends StringUtils {
 		}
 		return new String(buffer);
 	}
+
+    /**
+     *  将目标字符串去匹配给定字符串，支持特殊匹配符： *(多个字符)   ?(单个字符)    .
+     *  例如：  matchStr("abcdef", "abc*") 返回true
+     * @param target 目标字符串
+     * @param pattern 匹配的字符串
+     * @return 匹配：true， 其他：false
+     */
+	public static boolean matchStr(String target, String pattern) {
+	    if (target == null || pattern == null){
+	        throw new NullPointerException("匹配字符串不能为空");
+	    }
+
+	    return StringPattern.compile(pattern).matcher(target).matches();
+    }
 
 }

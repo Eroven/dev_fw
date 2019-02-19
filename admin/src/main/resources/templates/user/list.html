@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户列表</title>
+    <link rel="icon" type="image/x-icon" href="/image/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<h2>用户列表</h2>
+<div>
+    <ul>
+        <!--/*@thymesVar id="users" type="java.util.List"*/-->
+        <li th:each="user:${users}">
+            <span th:text="${user.id}"></span>
+            <span th:text="${user.name}"></span>
+            <span th:text="${user.age}"></span>
+        </li>
+    </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <appender name="MUTATIVE-FILE" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator class="me.zhaotb.admin.spring.LogFileNameDiscriminator"/>
+        <sift>
+            <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <Prudent>true</Prudent>
+                <rollingPolicy
+                        class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                    <FileNamePattern>
+                        ${logPath}/%d{yyyy_MM_dd}.log
+                    </FileNamePattern>
+                </rollingPolicy>
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <Pattern>
+                        %d{yyyy-MM-dd HH:mm:ss} -%msg%n
+                    </Pattern>
+                </layout>
+                <encoder>
+                    <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                    <charset>UTF-8</charset>
+                </encoder>
+            </appender>
+        </sift>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="MUTATIVE-FILE" />
+    </root>
+
+</configuration>
