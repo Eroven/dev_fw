@@ -1,7 +1,12 @@
 package me.zhaotb.framework.util;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * @author zhaotangbo
@@ -68,27 +73,50 @@ public class FileUtil {
     /**
      * 将源文件移动到目标文件
      * @param srcFile 源文件
-     * @param destFile 目标位置
+     * @param destFile 目标文件
      * @return true：成功，否则false
      * @throws OutOfDiskSpaceException 如果磁盘空间不足抛出该异常
      */
-    public static boolean move(File srcFile, File destFile) {
-        if (!srcFile.isFile() || destFile.isFile()){
+    public static boolean move(File srcFile, File destFile) throws OutOfDiskSpaceException {
+        if (!srcFile.isFile()){
             return false;
         }
 
-        File file = destFile.getParentFile();
-        if (!file.isDirectory() && !file.mkdirs()){
+        File destPath = destFile.getParentFile();
+        if (!destPath.isDirectory() && !destPath.mkdirs()){
             return false;
         }
 
-        long usableSpace = file.getUsableSpace();
+        long usableSpace = destPath.getUsableSpace();
         long length = (long) (srcFile.length() * 1.5);
         if (length > usableSpace){
             throw new OutOfDiskSpaceException(destFile, length);
         }
 
         return srcFile.renameTo(destFile);
+    }
+
+    /**
+     * 复制文件
+     * @param srcFile 源文件
+     * @param destFile 目标文件
+     * @param append 是否追加，true：追加；false：不追加。不追加的时候如果目标文件已经存在则直接返回false
+     * @return true：成功，其他false
+     */
+    public static boolean copy(File srcFile, File destFile, boolean append) throws FileNotFoundException {
+        if (destFile.isFile() && !append){
+            return false;
+        }
+
+        try(FileInputStream in = new FileInputStream(srcFile);
+            FileOutputStream out = new FileOutputStream(destFile, append)) {
+            long copy = IOUtils.copyLarge(in, out);
+            return copy == srcFile.length();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
     }
 
 

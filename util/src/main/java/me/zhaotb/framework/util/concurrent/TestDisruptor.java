@@ -13,9 +13,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author zhaotangbo
  * @date 2019/2/21
  */
-public class TestQueue {
+public class TestDisruptor {
 
-    private Disruptor<Event<Integer>> disruptor = new Disruptor<>(Event::new, 1024 * 8 , new ThreadFactory() {
+    private Disruptor<Event<Integer>> disruptor = new Disruptor<>(Event::new, 1024  , new ThreadFactory() {
         AtomicLong count = new AtomicLong(1);
         @Override
         public Thread newThread(Runnable r) {
@@ -26,6 +26,10 @@ public class TestQueue {
     private ExecutorService service = Executors.newFixedThreadPool(6);
 
     private MyWorkHandler[] workHandlers;
+
+    private int getHandlerSize() {
+        return 32;
+    }
 
     public void start(){
 
@@ -73,10 +77,6 @@ public class TestQueue {
         return handlers;
     }
 
-    private int getHandlerSize() {
-        return 16;
-    }
-
     public class MyWorkHandler implements WorkHandler<Event<Integer>> {
 
         private long sum;
@@ -109,7 +109,7 @@ public class TestQueue {
     public static void main(String[] args) {
 
         long s = System.currentTimeMillis();
-        new TestQueue().start();
+        new TestDisruptor().start();
         long e = System.currentTimeMillis();
         System.out.println("程序耗时： " + (e - s));
 

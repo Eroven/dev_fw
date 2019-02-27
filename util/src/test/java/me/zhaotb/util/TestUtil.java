@@ -28,7 +28,7 @@ import java.util.HashSet;
 public class TestUtil {
 
     @Test
-    public void testMatchStr(){
+    public void testMatchStr() {
         boolean m = StringUtil.matchStr("abcdefg", "abc*f");
         System.out.println(m);
     }
@@ -43,15 +43,15 @@ public class TestUtil {
     }
 
     @Test
-    public void t(){
+    public void t() {
         System.out.println(1 << 20);
         System.out.println((7396939 / (1 << 20)));
 
-        System.out.println(64 * (7396939 / (1 << 20)) );
+        System.out.println(64 * (7396939 / (1 << 20)));
     }
 
     @Test
-    public void testMove(){
+    public void testMove() {
         File f = new File("F:\\tmp\\enterbill\\UNACCT_ITEM_20181201_200_0.txt");
         File df = new File("F:\\tmp\\enterbill\\move\\UNACCT_ITEM_20181201_200_0.txt");
         try {
@@ -305,7 +305,7 @@ public class TestUtil {
                 "2342342343242381234567891012345678911111118123656768798882342342342342342343242381234567891012345678911" +
                 "1111181236567687988823423423423423423432423812345678910123456789111111181236567687988823423423423423423" +
                 "4324238123456789101234567891111111812365676879888234234234234234234324238");
-        BigInteger integer2 =new BigInteger("123456789101234567891111111812365676879888234234234234234234324238123" +
+        BigInteger integer2 = new BigInteger("123456789101234567891111111812365676879888234234234234234234324238123" +
                 "4567891012345678911111118123656768798882342342342342342343242381234567891012345678911111118123656768798" +
                 "8823423423423423423432423812345678910123456789111111181236567687988823423423423423423432423812345678910" +
                 "1234567891111111812365676879888234234234234234234324238123456789101234567891111111812365676879888234234" +
@@ -405,4 +405,33 @@ public class TestUtil {
 
         System.out.println((1L << 32));
     }
+
+    @Test
+    public void testCopyFile() throws FileNotFoundException {
+        File srcFile = new File("F:\\tmp\\标准迷宫.txt");
+        File destFile = new File("F:\\tmp\\标准迷宫2.txt");
+        File tmp;
+        for (int i = 0; i < 3; i++) {
+            tmp = srcFile;
+            srcFile = destFile;
+            destFile = tmp;
+            boolean copied = FileUtil.copy(srcFile, destFile, true);
+            System.out.println(copied);
+        }
+    }
+
+    @Test
+    public void testMoveFile() {
+        File srcFile = new File("F:\\tmp\\标准迷宫.txt");
+        File destFile = new File("C:\\标准迷宫.txt");
+        boolean b = false;
+        try {
+            b = FileUtil.move(srcFile, destFile);
+        } catch (OutOfDiskSpaceException e) {
+            e.printStackTrace();
+        }
+        System.out.println(b);
+    }
+
+
 }

@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
  * @author zhaotangbo
  * @date 2019/2/20
  */
-public class TestService {
+public class Test {
 
     public static void main(String[] args) throws Exception {
 

@@ -22,6 +22,7 @@
         <module>service-admin</module>
         <module>LogTest</module>
         <module>admin</module>
+        <module>component-redis</module>
     </modules>
 
     <properties>
