@@ -20,7 +20,11 @@ public class CollectionUtil {
 	public static boolean isNotEmpty(Collection c) {
 		return !isEmpty(c);
 	}
-	
+
+	public static boolean isSingle(Collection c){
+	    return isNotEmpty(c) && c.size() == 1;
+    }
+
 	/**
 	 * 将src前size个值划分给target,剩余的值作为一个新list返回
 	 * @param src
