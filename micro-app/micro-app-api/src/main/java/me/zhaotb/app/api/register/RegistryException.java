@@ -1,4 +1,4 @@
-package me.zhaotb.app.api;
+package me.zhaotb.app.api.register;
 
 /**
  * 填写/读取 注册信息时出错

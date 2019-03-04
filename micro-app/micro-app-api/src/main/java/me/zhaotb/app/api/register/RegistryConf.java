@@ -1,4 +1,4 @@
-package me.zhaotb.app.api;
+package me.zhaotb.app.api.register;
 
 import lombok.Getter;
 import lombok.Setter;

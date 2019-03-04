@@ -1,4 +1,4 @@
-package me.zhaotb.app.api;
+package me.zhaotb.app.api.station;
 
 /**
  * @author zhaotangbo

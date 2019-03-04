@@ -1,17 +1,16 @@
-package me.zhaotb.app.api.test;
+package me.zhaotb.app.scheduler;
 
-import me.zhaotb.app.api.Address;
+import me.zhaotb.app.api.station.AppStation;
 import me.zhaotb.app.api.register.Register;
 import me.zhaotb.app.api.register.RegistryConf;
-import org.junit.Test;
 
 /**
  * @author zhaotangbo
- * @date 2019/3/1
+ * @date 2019/3/4
  */
-public class RegisterTest {
+public class SchedulerMain {
 
-    private RegistryConf getConf(){
+    private static RegistryConf getConf(){
         RegistryConf conf = new RegistryConf();
         conf.setConnectStr("localhost:2181");
         conf.setTickPort(3000);
@@ -19,20 +18,14 @@ public class RegisterTest {
         return conf;
     }
 
-    @Test
-    public void testRegister(){
+    public static void main(String[] args) {
         RegistryConf conf = getConf();
         Register register = new Register(conf);
         register.init();
 
-        try {
-            Address admin = register.admin();
-            System.out.println(admin);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        AppStation appStation = new AppStation(conf);
+        appStation.setRegister(register);
 
 
     }
-
 }

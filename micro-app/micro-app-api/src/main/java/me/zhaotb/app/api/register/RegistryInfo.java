@@ -1,7 +1,7 @@
-package me.zhaotb.app.api;
+package me.zhaotb.app.api.register;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.zhaotb.app.api.Address;
 
 import java.util.Hashtable;
 
