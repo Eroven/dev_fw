@@ -1,6 +1,6 @@
 package me.zhaotb.app.api.test;
 
-import me.zhaotb.app.api.Address;
+import me.zhaotb.app.api.register.Address;
 import me.zhaotb.app.api.register.Register;
 import me.zhaotb.app.api.register.RegistryConf;
 import org.junit.Test;
@@ -14,8 +14,8 @@ public class RegisterTest {
     private RegistryConf getConf(){
         RegistryConf conf = new RegistryConf();
         conf.setConnectStr("localhost:2181");
-        conf.setTickPort(3000);
-        conf.setCtrlPort(3010);
+        conf.setTickPort(3020);
+        conf.setCtrlPort(3030);
         return conf;
     }
 

@@ -1,7 +1,9 @@
-package me.zhaotb.app.api;
+package me.zhaotb.app.api.register;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import me.zhaotb.app.api.Env;
 
 /**
  * @author zhaotangbo
@@ -9,6 +11,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
+@EqualsAndHashCode
 public class Address {
     private String ip;
     private int port;
@@ -19,5 +22,10 @@ public class Address {
     @Override
     public String toString() {
         return get();
+    }
+
+    public static Address parseAddress(String ipPort){
+        String[] split = ipPort.split(Env.getIpPortSep(), 2);
+        return new Address(split[0], Integer.parseInt(split[1]));
     }
 }

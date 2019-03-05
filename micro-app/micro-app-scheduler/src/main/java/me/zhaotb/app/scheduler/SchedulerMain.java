@@ -1,6 +1,5 @@
 package me.zhaotb.app.scheduler;
 
-import me.zhaotb.app.api.station.AppStation;
 import me.zhaotb.app.api.register.Register;
 import me.zhaotb.app.api.register.RegistryConf;
 
@@ -23,8 +22,6 @@ public class SchedulerMain {
         Register register = new Register(conf);
         register.init();
 
-        AppStation appStation = new AppStation(conf);
-        appStation.setRegister(register);
 
 
     }

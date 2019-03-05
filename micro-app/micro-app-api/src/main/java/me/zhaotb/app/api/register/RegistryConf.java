@@ -41,6 +41,16 @@ public class RegistryConf {
     private int maxPort = 12000;
 
     /**
+     * 通用重试次数
+     */
+    private int retryTimes = 3;
+
+    /**
+     * 重试间隔，单位 ms
+     */
+    private long retryInterval = 1000;
+
+    /**
      * 每次心跳检测间隔， 单位： 毫秒
      */
     private int tickTime = 2000;

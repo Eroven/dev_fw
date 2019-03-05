@@ -1,17 +1,21 @@
 package me.zhaotb.app.api.station;
 
 import lombok.extern.slf4j.Slf4j;
-import me.zhaotb.app.api.Address;
+import me.zhaotb.app.api.register.Address;
 import me.zhaotb.app.api.register.Register;
 import me.zhaotb.app.api.register.RegistryConf;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.DatagramChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 应用连接基站
@@ -21,11 +25,13 @@ import java.util.concurrent.Executors;
 @Slf4j
 public class AppStation {
 
-    private Register register;
+    protected Register register;
 
-    private final RegistryConf conf;
+    protected RegistryConf conf;
 
-    public AppStation(RegistryConf conf) {
+    protected AtomicBoolean stoped = new AtomicBoolean(false);
+
+    public void setConf(RegistryConf conf) {
         this.conf = conf;
     }
 
@@ -33,53 +39,126 @@ public class AppStation {
         this.register = register;
     }
 
-    /**
-     * 初始化基站
-     */
-    public void init(){
-        if (register == null){
-            register = new Register(conf);
-            register.init();
-        }
-
+    public static StationBuilder newLeaderStation(){
+        StationBuilder stationBuilder = new StationBuilder(new LeaderStationTCP());
+        return stationBuilder;
     }
 
-    private class AdminStation {
+    public static StationBuilder newFollowStation(){
+        StationBuilder stationBuilder = new StationBuilder(new FollowStation());
+        return stationBuilder;
+    }
+
+    public static class StationBuilder {
+
+        private RegistryConf conf;
+
+        private Register register;
+
+        private AppStation appStation;
+
+        public StationBuilder(AppStation appStation) {
+            this.appStation = appStation;
+        }
+
+        public StationBuilder conf(RegistryConf conf){
+            this.conf = conf;
+            return this;
+        }
+
+        public StationBuilder register(Register register){
+            this.register = register;
+            return this;
+        }
+
+        public AppStation build() throws StationException {
+            if (register == null){
+                throw new StationException("Register不能为空");
+            }
+            appStation.setRegister(register);
+            if (conf != null){
+                appStation.setConf(conf);
+            }else {
+                appStation.setConf(register.getConf());
+            }
+
+            return appStation;
+        }
+    }
+
+
+    /**
+     * 启动基站，开始建立连接
+     * @throws Exception 异常
+     */
+    public synchronized void start() throws Exception{
+    }
+    public synchronized void stop(){
+        stoped.set(true);
+    }
+
+
+    /**
+     *
+     */
+    private static class LeaderStationUDP extends AppStation {
+
+        private DatagramSocket server;
+
+        @Override
+        public void start() throws Exception {
+            server = new DatagramSocket(conf.getCtrlPort());
+            DatagramChannel channel = server.getChannel();
+        }
+    }
+
+    private static class LeaderStationTCP extends AppStation {
 
         private ServerSocket server;
 
         private ExecutorService executorService = Executors.newCachedThreadPool();
 
-        public void start() throws StationException, IOException {
+        @Override
+        public synchronized void start() throws StationException, IOException {
+            if (stoped.get()){
+                return;
+            }
 
-            int port = conf.getMinPort();
-            int maxPort = conf.getMaxPort();
-            for (int i = port; i < maxPort; i++) {
-                try {
-                    server = new ServerSocket(port);
-                    break;
-                } catch (IOException e) {
-                    log.warn(port + " 被占用.");
-                }
-            }
-            if (server == null){
-                log.error(port + " ~ " + maxPort + " 均被占用");
-                throw new StationException("启动admin station 失败！");
-            }
+            ensureServer(conf.getRetryTimes());
             while (!server.isClosed()){
                 Socket accept = server.accept();
-                executorService.submit(new AdminCommu(accept));
+                executorService.submit(new LeaderCommu(accept));
+            }
+
+        }
+
+        private void ensureServer(int retryTimes) {
+            if (retryTimes < 1){
+                log.error("启动基站失败!");
+            }
+            try {
+                server = new ServerSocket(conf.getCtrlPort());
+            } catch (Exception e){
+                log.warn("启动基站失败...重试中");
+                try {
+                    TimeUnit.MILLISECONDS.sleep(conf.getRetryInterval());
+                } catch (InterruptedException ignore) {
+                    log.warn("重试被打断");
+                    return;
+                }
+                ensureServer(retryTimes - 1);
             }
         }
 
-        public void stop(){
-
+        @Override
+        public synchronized void stop(){
+            super.stop();
         }
 
-        private class AdminCommu implements Runnable{
+        private class LeaderCommu implements Runnable {
             private Socket client;
 
-            public AdminCommu(Socket client) {
+            public LeaderCommu(Socket client) {
                 this.client = client;
             }
 
@@ -103,15 +182,26 @@ public class AppStation {
 
     }
 
-    private class ProgramStation {
+    private static class FollowStation extends AppStation{
+        private ServerSocket heart;
         private Socket socket;
 
-        public void start() {
+        @Override
+        public synchronized void start() {
+            try (ServerSocket heart = new ServerSocket(conf.getTickPort())) {
+                heart.accept();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void startHeartBeatReceiver(){
 
         }
 
-        public void stop(){
-
+        @Override
+        public synchronized void stop(){
+            super.stop();
         }
     }
 

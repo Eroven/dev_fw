@@ -26,8 +26,12 @@ public class CliMicroAppDemo extends AbstractMicroAppService implements CliAppli
         System.out.println(Arrays.toString(args));
         while(isRunning()){
             System.out.println(cmd.getOptionValue("say"));
-            sleep(1, TimeUnit.SECONDS);
+            execute();
         }
     }
 
+    @Override
+    public void execute() {
+        sleep(1, TimeUnit.SECONDS);
+    }
 }

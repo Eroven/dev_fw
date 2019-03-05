@@ -1,7 +1,6 @@
 package me.zhaotb.app.api.register;
 
 import lombok.Getter;
-import me.zhaotb.app.api.Address;
 
 import java.util.Hashtable;
 

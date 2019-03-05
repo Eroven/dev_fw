@@ -8,4 +8,6 @@ public interface MicroApplication extends Service {
 
     void setContext(MicroAppContext context);
 
+    void execute();
+
 }

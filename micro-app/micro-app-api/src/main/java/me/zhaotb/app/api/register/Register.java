@@ -1,16 +1,15 @@
 package me.zhaotb.app.api.register;
 
 import lombok.extern.slf4j.Slf4j;
-import me.zhaotb.app.api.Address;
 import me.zhaotb.app.api.AppInfo;
 import me.zhaotb.app.api.Env;
 import me.zhaotb.app.api.Util;
+import me.zhaotb.app.api.station.AppStation;
+import me.zhaotb.app.api.station.StationException;
 import me.zhaotb.framework.util.CollectionUtil;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListener;
 import org.apache.curator.framework.state.ConnectionState;
@@ -54,8 +53,18 @@ public class Register {
 
     private TickListener tickListener;
 
+    private AppStation station;
+
+    private boolean leader = false;
+
+    private ReentrantLock stationLock = new ReentrantLock();
+
     public Register(RegistryConf conf) {
         this.conf = conf;
+    }
+
+    public RegistryConf getConf() {
+        return conf;
     }
 
     public void init() {
@@ -63,13 +72,14 @@ public class Register {
         curator.start();
         selectAdmin();
         listenProgram();
+        setupFollowStation();
     }
 
     CuratorFramework getCurator() {
         return curator;
     }
 
-    Register getRegister(){
+    Register getRegister() {
         return this;
     }
 
@@ -108,24 +118,28 @@ public class Register {
 
             private Condition cond = lock.newCondition();
 
+            private Register register = getRegister();
+
             @Override
             public void takeLeadership(CuratorFramework client) throws Exception {
                 log.info("当选ADMIN");
                 //当选admin
-                String admin = path(conf.getRoot(), adminPath);
-                ensurePath(client, admin);
+                leader = true;
+                String adminPath = path(conf.getRoot(), register.adminPath);
+                ensurePath(client, adminPath);
                 InetAddress address = InetAddress.getLocalHost();
                 String hostAddress = address.getHostAddress() + IP_PORT_SEP + conf.getCtrlPort();
-                client.setData().forPath(admin, hostAddress.getBytes());
+                client.setData().forPath(adminPath, hostAddress.getBytes());
 
                 //打开心跳检测
-                String program = path(conf.getRoot(), programsPath);
-                ensurePath(client, program);
-                PathChildrenCache pathChildrenCache = new PathChildrenCache(client, program, false);
-                pathChildrenCache.getListenable().addListener(new ProgramNameListener(getRegister()), Util.getCacheService());
+                String followPath = path(conf.getRoot(), register.followPath);
+                ensurePath(client, followPath);
+                PathChildrenCache pathChildrenCache = new PathChildrenCache(client, followPath, false);
+                pathChildrenCache.getListenable().addListener(new ProgramNameListener(), Util.getNodeWatchedService());
                 pathChildrenCache.start();
                 doTick();
 
+                setupLeaderStation();
                 //TODO 监听程序节点
                 //TODO 打开数据交流端
 
@@ -141,6 +155,7 @@ public class Register {
                 }
                 log.info("卸任ADMIN");
                 pathChildrenCache.close();
+                leader = false;
             }
 
             @Override
@@ -162,8 +177,9 @@ public class Register {
 
     /**
      * 保证路径存在
+     *
      * @param client zk客户端
-     * @param path 路径
+     * @param path   路径
      * @throws Exception 异常
      */
     private void ensurePath(CuratorFramework client, String path) throws Exception {
@@ -174,12 +190,6 @@ public class Register {
     }
 
 
-    public void process(WatchedEvent event) throws Exception {
-        Watcher.Event.EventType type = event.getType();
-        String path = event.getPath();
-        System.out.println(path + " : " + type);
-    }
-
     private void doTick() {
 
     }
@@ -189,6 +199,52 @@ public class Register {
      */
     private void listenProgram() {
 
+    }
+
+    private void setupFollowStation() {
+        if (station != null) {
+            station.stop();
+        }
+        stationLock.lock();
+        try {
+            if (leader) {
+                return;
+            }
+            if (station != null) {
+                station.stop();
+            }
+            station = AppStation.newFollowStation().conf(conf).register(getRegister()).build();
+            station.start();
+        } catch (StationException e) {
+            log.error("构建基站异常", e);
+        } catch (Exception e) {
+            log.error("启动基站异常", e);
+        } finally {
+            stationLock.unlock();
+        }
+    }
+
+    private void setupLeaderStation() {
+        if (station != null) {
+            station.stop();
+        }
+        stationLock.lock();
+        try {
+            if (!leader) {
+                return;
+            }
+            if (station != null) {
+                station.stop();
+            }
+            station = AppStation.newLeaderStation().conf(conf).register(getRegister()).build();
+            station.start();
+        } catch (StationException e) {
+            log.error("构建基站异常", e);
+        } catch (Exception e) {
+            log.error("启动基站异常", e);
+        } finally {
+            stationLock.unlock();
+        }
     }
 
     /**

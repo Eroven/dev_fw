@@ -48,19 +48,39 @@ public class Util {
     }
 
     /**
-     * 获取规范zk路径的最后一个路径
-     * 例如： path=/
+     * 获取规范zk路径的最后一个路径.
+     * 例如： path=/first/second/last   lastPath(path) 返回 last.
+     * 特殊的，如果path不包含分隔符，则直接返回
      * @param path zk路径
      * @return 最后一个路径
      */
     public static String lastPath(String path){
         int i = path.lastIndexOf(SEP);
+        if (i == path.length() - 1){
+            return "";
+        }
         if (i == -1){
             return path;
         }else {
-            return path.substring(i);
+            return path.substring(i + 1);
         }
 
+    }
+
+    /**
+     * 去掉最后一个路径.
+     * 例如： path=/first/second/last   trimLast(path) 返回 /first/second.
+     * 特殊的，如果path不包含分隔符，则直接返回
+     * @param path 全路径
+     * @return 返回结果
+     */
+    public static String trimLast(String path){
+        int i = path.lastIndexOf(SEP);
+        if (i == -1){
+            return path;
+        }else {
+            return path.substring(0, i);
+        }
     }
 
     private static ExecutorService cacheService = Executors.newFixedThreadPool(5, new ThreadFactory() {
@@ -71,8 +91,20 @@ public class Util {
         }
     });
 
-    public static ExecutorService getCacheService(){
+    public static ExecutorService getNodeWatchedService(){
         return cacheService;
+    }
+
+    private static ExecutorService stationService = Executors.newFixedThreadPool(20, new ThreadFactory() {
+        private AtomicInteger count = new AtomicInteger();
+        @Override
+        public Thread newThread(Runnable r) {
+            return new Thread(r, "节点监控线程-" + count.incrementAndGet());
+        }
+    });
+
+    public static ExecutorService getStationService(){
+        return stationService;
     }
 
     public static void whenShutDown(Thread task){
