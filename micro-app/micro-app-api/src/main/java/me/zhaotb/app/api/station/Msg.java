@@ -1,5 +1,7 @@
 package me.zhaotb.app.api.station;
 
+import java.nio.ByteBuffer;
+
 /**
  * 基站之间互投的消息
  * @author zhaotangbo
@@ -92,6 +94,22 @@ public abstract class Msg {
         @Override
         public int size() {
             return 0;
+        }
+    }
+
+
+    public static class TickMsg extends Msg {
+
+        @Override
+        public byte[] content() {
+            ByteBuffer buffer = ByteBuffer.allocate(8);
+            buffer.putLong(System.currentTimeMillis());
+            return buffer.array();
+        }
+
+        @Override
+        public int size() {
+            return 8;
         }
     }
 

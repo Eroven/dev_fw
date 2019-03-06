@@ -1,6 +1,8 @@
 package me.zhaotb.app.api.register;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Hashtable;
 
@@ -10,22 +12,18 @@ import java.util.Hashtable;
  * @date 2019/3/1
  */
 @Getter
+@Setter
+@NoArgsConstructor
 public class RegistryInfo {
 
     private String appName;
 
-    private Hashtable<Address, Address> addressTable;
+    private Address tickAddr;
 
-    RegistryInfo(String appName) {
+    private Address ctrlAddr;
+
+    public RegistryInfo(String appName) {
         this.appName = appName;
-        addressTable = new Hashtable<>();
     }
-
-    void regist(String tickIp, int tickPort, String ctrlIp, int ctrlPort){
-        Address tick = new Address(tickIp, tickPort);
-        Address ctrl =new Address(ctrlIp, ctrlPort);
-        addressTable.put(tick, ctrl);
-    }
-
 
 }

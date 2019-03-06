@@ -35,4 +35,23 @@ public class RegisterTest {
 
     }
 
+
+    @Test
+    public void testRegister2(){
+        RegistryConf conf = getConf();
+        conf.setTickPort(3040);
+        conf.setCtrlPort(3050);
+        Register register = new Register(conf);
+        register.init();
+
+        try {
+            Address admin = register.admin();
+            System.out.println(admin);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
 }

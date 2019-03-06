@@ -9,7 +9,6 @@ import me.zhaotb.app.api.MicroApplication;
  */
 public class HelloWorld extends AbstractMicroAppService implements MicroApplication {
 
-
     @Override
     public void execute() {
         while (true){

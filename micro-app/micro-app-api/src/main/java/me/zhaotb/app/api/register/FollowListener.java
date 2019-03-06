@@ -40,6 +40,8 @@ public class FollowListener implements PathChildrenCacheListener {
 
                     PathChildrenCache programCache = new PathChildrenCache(client, Util.path(path, list.get(0)), true);
                     programCache.getListenable().addListener(new ProgramListener(), Util.getNodeWatchedService());
+                    programCache.start();
+                    LeaderCache.putPathCache(path, programCache);
 
                 } catch (Exception e) {
                     log.warn("无效follow节点：" + path);
@@ -73,6 +75,7 @@ public class FollowListener implements PathChildrenCacheListener {
 
                     PathChildrenCache pidCache = new PathChildrenCache(client, path, false);
                     pidCache.getListenable().addListener(new PidListener(), Util.getNodeWatchedService());
+                    pidCache.start();
                     LeaderCache.putPathCache(path, pidCache);
                     break;
                 case CHILD_REMOVED:

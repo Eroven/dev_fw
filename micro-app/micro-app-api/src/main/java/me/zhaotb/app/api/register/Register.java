@@ -14,13 +14,9 @@ import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListener;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.data.Stat;
 
 import java.net.InetAddress;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -53,7 +49,7 @@ public class Register {
 
     private TickListener tickListener;
 
-    private AppStation station;
+    private AppStation followStation;
 
     private boolean leader = false;
 
@@ -128,18 +124,16 @@ public class Register {
                 String adminPath = path(conf.getRoot(), register.adminPath);
                 ensurePath(client, adminPath);
                 InetAddress address = InetAddress.getLocalHost();
-                String hostAddress = address.getHostAddress() + IP_PORT_SEP + conf.getCtrlPort();
+                String hostAddress = address.getHostAddress() + IP_PORT_SEP + conf.getLeaderPort();
                 client.setData().forPath(adminPath, hostAddress.getBytes());
 
                 //打开心跳检测
                 String followPath = path(conf.getRoot(), register.followPath);
                 ensurePath(client, followPath);
                 PathChildrenCache pathChildrenCache = new PathChildrenCache(client, followPath, false);
-                pathChildrenCache.getListenable().addListener(new ProgramNameListener(), Util.getNodeWatchedService());
+                pathChildrenCache.getListenable().addListener(new FollowListener(), Util.getNodeWatchedService());
                 pathChildrenCache.start();
-                doTick();
-
-                setupLeaderStation();
+                AppStation leaderStation = setupLeaderStation();
                 //TODO 监听程序节点
                 //TODO 打开数据交流端
 
@@ -155,7 +149,9 @@ public class Register {
                 }
                 log.info("卸任ADMIN");
                 pathChildrenCache.close();
+                leaderStation.stop();
                 leader = false;
+
             }
 
             @Override
@@ -190,10 +186,6 @@ public class Register {
     }
 
 
-    private void doTick() {
-
-    }
-
     /**
      * 监听程序注册信息
      */
@@ -202,19 +194,13 @@ public class Register {
     }
 
     private void setupFollowStation() {
-        if (station != null) {
-            station.stop();
-        }
         stationLock.lock();
         try {
-            if (leader) {
-                return;
+            if (followStation != null){
+                followStation.stop();
             }
-            if (station != null) {
-                station.stop();
-            }
-            station = AppStation.newFollowStation().conf(conf).register(getRegister()).build();
-            station.start();
+            followStation = AppStation.newFollowStation().conf(conf).register(getRegister()).build();
+            followStation.start();
         } catch (StationException e) {
             log.error("构建基站异常", e);
         } catch (Exception e) {
@@ -224,27 +210,17 @@ public class Register {
         }
     }
 
-    private void setupLeaderStation() {
-        if (station != null) {
-            station.stop();
-        }
-        stationLock.lock();
+    private AppStation setupLeaderStation() {
+        AppStation leaderStation = null;
         try {
-            if (!leader) {
-                return;
-            }
-            if (station != null) {
-                station.stop();
-            }
-            station = AppStation.newLeaderStation().conf(conf).register(getRegister()).build();
-            station.start();
+            leaderStation = AppStation.newLeaderStation().conf(conf).register(getRegister()).build();
+            leaderStation.start();
         } catch (StationException e) {
             log.error("构建基站异常", e);
         } catch (Exception e) {
             log.error("启动基站异常", e);
-        } finally {
-            stationLock.unlock();
         }
+        return leaderStation;
     }
 
     /**
@@ -256,16 +232,14 @@ public class Register {
     public void register(RegistryInfo info) throws Exception {
         CuratorFramework curator = getCurator();
         String appName = info.getAppName();
-        Hashtable<Address, Address> addressTable = info.getAddressTable();
-        String appPath = path(conf.getRoot(), appName);
-        Enumeration<Address> keys = addressTable.keys();
-        while (keys.hasMoreElements()) {
-            Address tick = keys.nextElement();
-            Address ctrl = addressTable.get(tick);
-            String tickPath = path(appPath, tick.get());
-            String ctrlPath = path(tickPath, ctrl.get());
-            ensurePath(curator, ctrlPath);
+        String path = path(conf.getRoot(), this.followPath,
+                info.getTickAddr().get(), info.getCtrlAddr().get(), appName);
+        Stat stat = curator.checkExists().forPath(path);
+        String res = path;
+        if (stat == null) {
+            res = curator.create().creatingParentsIfNeeded().forPath(path);
         }
+        log.info("register : {} , return : {}", path, res);
     }
 
     /**
@@ -290,7 +264,7 @@ public class Register {
                     }
                     String[] tickInfo = tick.split(IP_PORT_SEP, 2);
                     String[] ctrlInfo = ctrl.get(0).split(IP_PORT_SEP, 2);
-                    info.regist(tickInfo[0], Integer.parseInt(tickInfo[1]), ctrlInfo[0], Integer.parseInt(ctrlInfo[1]));
+//                    info.regist(tickInfo[0], Integer.parseInt(tickInfo[1]), ctrlInfo[0], Integer.parseInt(ctrlInfo[1]));
                 } catch (Exception e) {
                     log.warn("无效注册节点：" + path(appPath, tick));
                 }

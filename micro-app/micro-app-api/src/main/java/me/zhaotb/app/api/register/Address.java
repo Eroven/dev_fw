@@ -28,4 +28,7 @@ public class Address {
         String[] split = ipPort.split(Env.getIpPortSep(), 2);
         return new Address(split[0], Integer.parseInt(split[1]));
     }
+    public static Address formatAddress(String ip, int port){
+        return new Address(ip, port);
+    }
 }

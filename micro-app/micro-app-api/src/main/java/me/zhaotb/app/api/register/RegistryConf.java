@@ -34,6 +34,16 @@ public class RegistryConf {
     private int ctrlPort = 3020;
 
     /**
+     * 当选leader后额外占用一个端口
+     */
+    private int leaderPort = 3025;
+
+    /**
+     * 注册时绑定的地址，默认为本机ip
+     */
+    private String address;
+
+    /**
      * 程序会使用最小和最大值之间的端口，某个被占则用下一个
      */
     private int minPort = 6000;
@@ -53,11 +63,13 @@ public class RegistryConf {
     /**
      * 每次心跳检测间隔， 单位： 毫秒
      */
-    private int tickTime = 2000;
+    private long tickTime = 3000;
 
     /**
      * 心跳无响应超过该次数，判定为失联
      */
     private int tickLimit = 3;
+
+    private long tickTimeout = 3000;
 
 }
