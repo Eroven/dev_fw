@@ -3,6 +3,7 @@ package me.zhaotb.app.api.register;
 import lombok.extern.slf4j.Slf4j;
 import me.zhaotb.app.api.Env;
 import me.zhaotb.app.api.Util;
+import me.zhaotb.app.api.station.Address;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
@@ -22,7 +23,6 @@ public class FollowListener implements PathChildrenCacheListener {
     public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
         PathChildrenCacheEvent.Type type = event.getType();
         String path = event.getData().getPath();
-        String ipPortSep = Env.getIpPortSep();
         switch (type) {
             case CHILD_ADDED:
                 try {
@@ -30,11 +30,9 @@ public class FollowListener implements PathChildrenCacheListener {
                     if (list.size() != 1) {
                         throw new Exception();
                     }
-                    String[] tickIp = Util.lastPath(path).split(ipPortSep);
-                    Address tickAddr = new Address(tickIp[0], Integer.parseInt(tickIp[1]));
-                    String[] ctrlIp = list.get(0).split(ipPortSep);
-                    Address ctrlAddr = new Address(ctrlIp[0], Integer.parseInt(ctrlIp[1]));
 
+                    Address tickAddr = Address.parseAddress(Util.lastPath(path));
+                    Address ctrlAddr = Address.parseAddress(list.get(0));
                     NodeInfo nodeInfo = new NodeInfo(tickAddr, ctrlAddr);
                     LeaderCache.putNodeInfo(path, nodeInfo);
 

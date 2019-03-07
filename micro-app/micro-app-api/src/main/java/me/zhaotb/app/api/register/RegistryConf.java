@@ -24,7 +24,7 @@ public class RegistryConf {
     private String root = "/micro-app/scheduler";
 
     /**
-     * 检测心跳的端口
+     * 接收检测心跳的端口;如果是leader则为接收命令的端口
      */
     private int tickPort = 3015;
 
@@ -32,11 +32,6 @@ public class RegistryConf {
      * 控制端口；数据交流端口
      */
     private int ctrlPort = 3020;
-
-    /**
-     * 当选leader后额外占用一个端口
-     */
-    private int leaderPort = 3025;
 
     /**
      * 注册时绑定的地址，默认为本机ip

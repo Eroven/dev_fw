@@ -1,4 +1,4 @@
-package me.zhaotb.app.api.register;
+package me.zhaotb.app.api.station;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -15,7 +15,6 @@ import me.zhaotb.app.api.Env;
 public class Address {
     private String ip;
     private int port;
-    Address(){}
     public String get(){
         return ip + ":" + port;
     }

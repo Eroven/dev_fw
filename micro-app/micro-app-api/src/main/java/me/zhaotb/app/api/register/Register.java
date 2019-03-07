@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.zhaotb.app.api.AppInfo;
 import me.zhaotb.app.api.Env;
 import me.zhaotb.app.api.Util;
+import me.zhaotb.app.api.station.Address;
 import me.zhaotb.app.api.station.AppStation;
 import me.zhaotb.app.api.station.StationException;
 import me.zhaotb.framework.util.CollectionUtil;
@@ -124,7 +125,7 @@ public class Register {
                 String adminPath = path(conf.getRoot(), register.adminPath);
                 ensurePath(client, adminPath);
                 InetAddress address = InetAddress.getLocalHost();
-                String hostAddress = address.getHostAddress() + IP_PORT_SEP + conf.getLeaderPort();
+                String hostAddress = address.getHostAddress() + IP_PORT_SEP + conf.getTickPort();
                 client.setData().forPath(adminPath, hostAddress.getBytes());
 
                 //打开心跳检测

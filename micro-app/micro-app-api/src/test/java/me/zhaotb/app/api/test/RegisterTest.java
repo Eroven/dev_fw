@@ -1,6 +1,6 @@
 package me.zhaotb.app.api.test;
 
-import me.zhaotb.app.api.register.Address;
+import me.zhaotb.app.api.station.Address;
 import me.zhaotb.app.api.register.Register;
 import me.zhaotb.app.api.register.RegistryConf;
 import org.junit.Test;

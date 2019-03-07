@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -116,12 +117,24 @@ public class Util {
         }
     });
 
+    private static ScheduledExecutorService heartbeatService = Executors.newScheduledThreadPool(10, new ThreadFactory() {
+        private AtomicLong count = new AtomicLong();
+        @Override
+        public Thread newThread(Runnable r) {
+            return new Thread(r, "心跳定时线程-" + count.incrementAndGet());
+        }
+    });
+
     public static ExecutorService getFollowStationService(){
         return followStationService;
     }
 
     public static ExecutorService getLeaderStationService(){
         return leaderStationService;
+    }
+
+    public static ScheduledExecutorService getHeartbeatService(){
+        return heartbeatService;
     }
 
     /**

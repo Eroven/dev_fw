@@ -6,7 +6,6 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -16,7 +15,6 @@ import java.util.List;
  */
 @Slf4j
 public class LeaderCache {
-
 
     /**
      * 路径与节点信息关联

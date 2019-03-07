@@ -2,12 +2,14 @@ package me.zhaotb.app.api.station;
 
 import lombok.extern.slf4j.Slf4j;
 import me.zhaotb.app.api.Util;
-import me.zhaotb.app.api.register.Address;
 import me.zhaotb.app.api.register.LeaderCache;
 import me.zhaotb.app.api.register.NodeInfo;
 import me.zhaotb.app.api.register.Register;
 import me.zhaotb.app.api.register.RegistryConf;
 import me.zhaotb.app.api.register.RegistryInfo;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +39,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 public class AppStation {
+
+    private CuratorFramework curator;
 
     protected Register register;
 
@@ -97,6 +101,9 @@ public class AppStation {
         }
     }
 
+    public CuratorFramework getCurator() {
+        return curator;
+    }
 
     /**
      * 启动基站，开始建立连接.该方法应该立即返回
@@ -104,6 +111,8 @@ public class AppStation {
      * @throws Exception 异常
      */
     public synchronized void start() throws Exception {
+        curator = CuratorFrameworkFactory.newClient(conf.getConnectStr(), new ExponentialBackoffRetry(3000, 3));
+        curator.start();
     }
 
     /**
@@ -131,7 +140,6 @@ public class AppStation {
 
         private ServerSocket leaderServer;
 
-
         @Override
         public synchronized void start() throws Exception {
             if (stopped.get()) {
@@ -143,21 +151,40 @@ public class AppStation {
             Util.getLeaderStationService().execute(this::doTick);
         }
 
-        private void doTick(){
+        private void doTick() {
             long tickTime = conf.getTickTime();
             int tickLimit = conf.getTickLimit();
             long tickTimeout = conf.getTickTimeout();
 
+
+
             List<NodeInfo> nodeInfos = LeaderCache.listNodeInfo();
             for (NodeInfo node : nodeInfos) {
                 Address tickAddr = node.getTickAddr();
-                Msg msg = dispatcherTick(tickAddr, tickLimit, tickTimeout);
-                System.out.println(msg);
+
+                try {
+                    Msg msg = dispatcherTick(tickAddr, tickLimit, tickTimeout);
+                    System.out.println(msg);
+
+                } catch (HeartBeatException e){
+
+                }
 
             }
         }
 
-        private Msg dispatcherTick(Address tickAddr, int leftRetryTimes, long timeout) {
+        private class DispatcherTickTask implements Runnable{
+
+            @Override
+            public void run() {
+
+            }
+        }
+
+        private Msg dispatcherTick(Address tickAddr, int leftRetryTimes, long timeout) throws HeartBeatException {
+            if (leftRetryTimes < 1){
+                throw new HeartBeatException("响应超时，在重试" + conf.getTickLimit() + "次后放弃");
+            }
             try (Socket socket = new Socket(tickAddr.getIp(), tickAddr.getPort())) {
                 Future<Msg> future = Util.getLeaderStationService().submit(new TickTask(socket));
                 return future.get(timeout, TimeUnit.MILLISECONDS);
@@ -187,17 +214,18 @@ public class AppStation {
                 ByteBuffer buffer = ByteBuffer.wrap(bytes);
                 int anInt = buffer.getInt();
                 long aLong = buffer.getLong();
+                System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(aLong)));
                 return null;
             }
         }
 
-        private void doRequest()  {
+        private void doRequest() {
             try {
                 while (!leaderServer.isClosed()) {
                     Socket accept = leaderServer.accept();
                     Util.getLeaderStationService().execute(new LeaderCommu(accept));
                 }
-            }catch (IOException e){
+            } catch (IOException e) {
                 log.error("Leader 监控请求异常", e);
             }
         }
@@ -207,7 +235,7 @@ public class AppStation {
                 throw new StationException("启动基站失败!");
             }
             try {
-                leaderServer = new ServerSocket(conf.getLeaderPort());
+                leaderServer = new ServerSocket(conf.getTickPort());
             } catch (Exception e) {
                 log.warn("启动基站失败...重试中");
                 try {
@@ -260,7 +288,7 @@ public class AppStation {
 
         @Override
         public synchronized void start() {
-            if (stopped.get()){
+            if (stopped.get()) {
                 return;
             }
             Util.getFollowStationService().execute(this::startHeartBeatReceiver);
@@ -287,20 +315,22 @@ public class AppStation {
 
         private void startHeartBeatReceiver() {
             try {
+                Socket tmp;
                 heart = new ServerSocket(conf.getTickPort());
                 while (!heart.isClosed()) {
-                    if (stopped.get()){
+                    if (stopped.get()) {
                         stop();
                         return;
                     }
                     requestLock.lock();
                     try {
+                        tmp = heart.accept();
                         if (leaderHeartbeatRequest != null){
                             leaderHeartbeatRequest.close();
                         }
-                        leaderHeartbeatRequest = heart.accept();
+                        leaderHeartbeatRequest = tmp;
                         requestCond.signal();
-                    }finally {
+                    } finally {
                         requestLock.unlock();
                     }
                 }
@@ -313,21 +343,21 @@ public class AppStation {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             byte[] headBuffer = new byte[4];
             while (true) {
-                if (stopped.get()){
+                if (stopped.get()) {
                     return;
                 }
-                if (leaderHeartbeatRequest == null || !leaderHeartbeatRequest.isConnected()){
-                    requestLock.lock();
-                    try {
-                        if (stopped.get()){
-                            return;
-                        }
-                        requestCond.await();
-                    } catch (InterruptedException e) {
-                        log.warn("等待被打断", e);
-                    } finally {
-                        requestLock.unlock();
+                requestLock.lock();
+                try {
+                    if (stopped.get()) {
+                        return;
                     }
+                    if (leaderHeartbeatRequest == null || !leaderHeartbeatRequest.isConnected()) {
+                        requestCond.await();
+                    }
+                } catch (InterruptedException e) {
+                    log.warn("等待被打断", e);
+                } finally {
+                    requestLock.unlock();
                 }
                 try (InputStream inputStream = leaderHeartbeatRequest.getInputStream();
                      OutputStream outputStream = leaderHeartbeatRequest.getOutputStream()) {
@@ -360,7 +390,7 @@ public class AppStation {
         @Override
         public synchronized void stop() {
             super.stop();
-            if (leaderHeartbeatRequest != null){
+            if (leaderHeartbeatRequest != null) {
                 try {
                     leaderHeartbeatRequest.close();
                     leaderHeartbeatRequest = null;
@@ -368,7 +398,7 @@ public class AppStation {
                     log.error("关闭心跳请求端异常", e);
                 }
             }
-            if (heart != null){
+            if (heart != null) {
                 try {
                     heart.close();
                     heart = null;

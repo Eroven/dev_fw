@@ -3,6 +3,7 @@ package me.zhaotb.app.api.register;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import me.zhaotb.app.api.station.Address;
 
 /**
  * @author zhaotangbo

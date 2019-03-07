@@ -3,8 +3,7 @@ package me.zhaotb.app.api.register;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Hashtable;
+import me.zhaotb.app.api.station.Address;
 
 /**
  * 注册表信息
