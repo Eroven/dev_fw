@@ -10,9 +10,18 @@ public class FtpInfoFactory {
     public static FtpInfo factoryByProperties(Environment env, String prefix){
         FtpInfo info = new FtpInfo();
         info.setIp(env.getProperty(totalKey(prefix, "ip")));
-        info.setPort(Integer.parseInt(env.getProperty(totalKey(prefix, "port"))));
+        String port = env.getProperty(totalKey(prefix, "port"));
+        if (port == null){
+            info.setPort(21);
+        } else {
+            info.setPort(Integer.parseInt(port));
+        }
         info.setUser(env.getProperty(totalKey(prefix, "user")));
         info.setPassword(env.getProperty(totalKey(prefix, "password")));
+        String localmod = env.getProperty(totalKey(prefix, "localmod"));
+        if (Boolean.valueOf(localmod)){
+            info.setActiveMode(true);
+        }
         return info;
     }
 

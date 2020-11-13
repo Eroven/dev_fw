@@ -21,11 +21,11 @@ public class MyAtAspect {
     }
 
     @Around(value = "log()")
-    public void doAround(ProceedingJoinPoint point) throws Throwable {
+    public Object doAround(ProceedingJoinPoint point) throws Throwable {
         Object obj = point.getThis();
         Object[] args = point.getArgs();
         String kind = point.getKind();
         Object target = point.getTarget();
-        point.proceed();
+        return point.proceed();
     }
 }

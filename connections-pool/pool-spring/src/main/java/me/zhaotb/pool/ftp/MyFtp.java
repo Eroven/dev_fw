@@ -6,4 +6,5 @@ public interface MyFtp extends FtpOperation{
 
     List<String> listnames() throws Exception;
 
+    String look();
 }

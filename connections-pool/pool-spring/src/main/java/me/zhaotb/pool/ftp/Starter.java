@@ -26,6 +26,11 @@ public class Starter {
         return listnames.toString();
     }
 
+    @RequestMapping("/look")
+    public String look() {
+        return myFtp.look();
+    }
+
     @RequestMapping("/cat")
     public String cat(@RequestParam("file") String file,@RequestParam(required = false) String charset) throws Exception {
         StringBuilder sb = new StringBuilder();

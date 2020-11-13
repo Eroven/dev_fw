@@ -27,14 +27,6 @@ public class MyAspect {
 //        point.proceed();
     }
 
-    @AfterReturning
-    public void aspReturn(){
-    }
-
-    @AfterThrowing
-    public void aspThr(){
-
-    }
 
 }
 

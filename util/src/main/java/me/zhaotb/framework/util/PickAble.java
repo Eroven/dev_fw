@@ -1,7 +1,7 @@
 package me.zhaotb.framework.util;
 
 /**
- * 该接口规范实现类必须有：指值和占用空间
+ * 该接口规范实现类必须有：价值和占用空间
  * 
  * @author zhaotangbo
  * @date 2019/1/18
