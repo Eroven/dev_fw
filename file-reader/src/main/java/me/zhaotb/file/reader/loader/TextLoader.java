@@ -100,7 +100,7 @@ public class TextLoader implements Loader,Closeable {
      * @return 实际加载byte个数
      */
     @Override
-    public int load(byte[] buffer) {
+    public int load(byte[] buffer) throws IOException {
         return byteLoader.load(buffer);
     }
 }

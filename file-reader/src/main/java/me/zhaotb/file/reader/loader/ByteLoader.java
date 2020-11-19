@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
@@ -22,17 +23,27 @@ public class ByteLoader implements Loader, Closeable {
     private long limit;
     private FileChannel channel;
 
-    public ByteLoader(String filePath, String fileName) throws IOException {
-        File file = new File(filePath, fileName);
+    public ByteLoader(File file) throws IOException {
+        init(file);
+    }
+
+    private void init(File file) throws IOException {
         if (!file.exists()){
             throw new FileNotFoundException(file.getAbsolutePath());
         }
 
         limit = file.length();
         channel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
-
     }
 
+    public ByteLoader(String filePath, String fileName) throws IOException {
+        File file = new File(filePath, fileName);
+        init(file);
+    }
+
+    public ByteLoader(String file) throws IOException {
+        init(new File(file));
+    }
 
     public void close() throws IOException {
         channel.close();
@@ -117,7 +128,7 @@ public class ByteLoader implements Loader, Closeable {
      * @return 实际加载byte个数
      */
     @Override
-    public int load(byte[] buffer) {
-        return 0;
+    public int load(byte[] buffer) throws IOException {
+        return channel.read(ByteBuffer.wrap(buffer));
     }
 }

@@ -10,6 +10,20 @@ import java.util.Scanner;
 public class TestLoader {
 
     @Test
+    public void testByteLoader() throws Exception {
+        try (ByteLoader loader = new ByteLoader("f:/data", "reader.txt")){
+            byte[] buffer = new byte[1024];
+            int load;
+            while ((load = loader.load(buffer)) > 0) {
+                System.out.println(new String(buffer, 0, load));
+            }
+
+
+        }
+
+    }
+
+    @Test
     public void testTextLoader() throws Exception {
         try(ByteLoader loader = new ByteLoader("f:/data", "reader.txt");
             TextLoader textLoader = new TextLoader(loader, "utf-8")) {
