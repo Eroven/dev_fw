@@ -15,11 +15,23 @@ import java.nio.channels.SocketChannel;
  */
 public class NIOTest {
 
-    public static String host = "localhost";
-    public static int port = 1702;
 
     public static void main(String[] args) throws IOException {
+        NIOSocketServer server = new NIOSocketServer();
+        server.init();
+        new Thread(server::run).start();
 
+        NIOSocketClient client = new NIOSocketClient();
+        client.init();
+        new Thread(client::run).start();
+
+//        test01();
+
+    }
+
+    private static void test01() throws IOException {
+        String host = "localhost";
+        int port = 1702;
         Selector selector = Selector.open();
         Selector selector2 = Selector.open();
 
@@ -37,7 +49,7 @@ public class NIOTest {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                if (accept != null){
+                if (accept != null) {
                     try {
                         accept.close();
                     } catch (IOException e) {
@@ -58,7 +70,6 @@ public class NIOTest {
         client.close();
 
         System.out.println("main");
-
     }
 
 }
