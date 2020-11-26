@@ -23,6 +23,7 @@
         <module>LogTest</module>
         <module>admin</module>
         <module>component-redis</module>
+        <module>java-memory-test</module>
     </modules>
 
     <properties>
