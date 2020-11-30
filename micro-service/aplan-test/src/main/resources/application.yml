@@ -1,0 +1,24 @@
+server:
+  port: 20010
+
+spring:
+  application:
+    name: spring-test
+
+eureka:
+  client:
+    region: chongQing
+    availability-zones:
+      wuHan: "hongShan"
+      chongQing: "yuBei,heChuan"
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
+#      defaultZone: "http://test:123456@132.126.3.28:${server.port}/eureka/"
+      hongShan: "http://test:123456@132.126.3.28:9201/eureka/"
+      yuBei: "http://test:123456@132.126.3.28:9202/eureka/"
+      heChuan: "http://test:123456@132.126.3.28:9203/eureka/"
+  instance:
+    hostname: 132.126.3.28
+
+

@@ -1,0 +1,31 @@
+server:
+  port: 9090
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/Eroven/gitlean.git
+          search-paths: config
+          basedir: ./target/config
+          username: 1054709236@qq.com
+          password: zhaotangbo1994
+          clone-on-start: true
+
+eureka:
+  client:
+    region: wuHan
+    availability-zones:
+      wuHan: "hongShan"
+      chongQing: "yuBei,heChuan"
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
+      hongShan: "http://test:123456@132.126.3.28:9201/eureka/"
+      yuBei: "http://test:123456@132.126.3.28:9202/eureka/"
+      heChuan: "http://test:123456@132.126.3.28:9203/eureka/"

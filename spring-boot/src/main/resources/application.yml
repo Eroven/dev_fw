@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+management:
+  endpoint:
+    shutdown:
+      enabled: true
+    health:
+      enabled: true
+    beans:
+      enabled: true
+  endpoints:
+    web:
+      base-path: "/management/"
+
+
+spring:
+  application:
+    name: me
+

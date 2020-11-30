@@ -1,0 +1,11 @@
+spring:
+  cloud:
+    config:
+      #uri: ["http://localhost:9090"]
+      label: master #配置文件在git的分支
+      profile: dev #配置文件的profile
+      name: register-eureka #配置文件名
+      allow-override: true
+      discovery:
+        enabled: true  #使用注册中发现配置服务。使用了这项配置后， spring.cloud.config.url就没用了
+        service-id: "config-server" #配置服务在注册中心注册的id
