@@ -1,0 +1,35 @@
+spring:
+  cloud:
+    config:
+      #uri: ["http://localhost:9090"]
+      label: master #配置文件在git的分支
+      profile: dev #配置文件的profile
+      name: eureka-client #配置文件名前缀
+      discovery:
+        enabled: true  #使用注册中发现配置服务。使用了这项配置后， spring.cloud.config.url就没用了
+        service-id: "CONFIG-SERVER" #配置服务在注册中心注册的id
+      username: test
+      password: 123456
+      retry:
+        max-attempts: 3
+        max-interval: 1000
+      allow-override: false
+  application:
+    name: task
+  profiles:
+    active: dev
+
+eureka:
+  client:
+    region: wuHan
+    availability-zones:
+      wuHan: "hongShan"
+      chongQing: "yuBei,heChuan"
+    serviceUrl:
+      defaultZone: "http://test:123456@132.126.3.28:9201/eureka/"
+      hongShan: "http://test:123456@132.126.3.28:9201/eureka/"
+      yuBei: "http://test:123456@132.126.3.28:9202/eureka/"
+      heChuan: "http://test:123456@132.126.3.28:9203/eureka/"
+  instance:
+    hostname: 132.126.3.28
+    prefer-ip-address: true

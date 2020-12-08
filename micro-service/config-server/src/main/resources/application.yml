@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: dev
+    active: study
   application:
     name: config-server
   cloud:
@@ -29,3 +29,5 @@ eureka:
       hongShan: "http://test:123456@132.126.3.28:9201/eureka/"
       yuBei: "http://test:123456@132.126.3.28:9202/eureka/"
       heChuan: "http://test:123456@132.126.3.28:9203/eureka/"
+  instance:
+    prefer-ip-address: true

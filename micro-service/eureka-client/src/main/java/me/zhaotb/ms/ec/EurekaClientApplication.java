@@ -21,9 +21,17 @@ public class EurekaClientApplication {
     @Value("${server.port}")
     private int port;
 
+    @Value("${config.prop:}")
+    private String configProp;
+
     @RequestMapping("test")
     public String test(){
         return "hello , " + port;
+    }
+
+    @RequestMapping("prop")
+    public String prop(){
+        return configProp;
     }
 
     public static void main(String[] args) {

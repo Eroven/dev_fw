@@ -4,20 +4,20 @@ server:
 spring:
   application:
     name: eureka-center
+  profiles:
+    active: study
   security:
     user:
       name: test  # 用户名
       password: 123456   # 密码
-  profiles:
-    active: study
 
 eureka:
   environment: "study"
   instance:
     hostname: 132.126.3.28
+    prefer-ip-address: true
     dataCenterInfo:
       com.netflix.appinfo.MyDataCenterInfo: MyOwn #没起作用，应该是要去做一下类转换处理. -- 这里的数据中心目前默认aws
-
   client:
     region: wuHan
     availability-zones:

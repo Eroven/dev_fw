@@ -1,20 +1,11 @@
 server:
   port: 9250
 
-spring:
-  application:
-    name: task
-
-eureka:
-  client:
-    region: wuhan
-    availability-zones:
-      wuHan: "hongShan"
-      chongQing: "yuBei,heChuan"
-    serviceUrl:
-      hongShan: "http://test:123456@132.126.3.28:9201/eureka/"
-      yuBei: "http://test:123456@132.126.3.28:9202/eureka/"
-      heChuan: "http://test:123456@132.126.3.28:9203/eureka/"
-  instance:
-    hostname: 132.126.3.28
-#    instanceId: "01"
+management:
+  endpoint:
+    shutdown:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: "*"

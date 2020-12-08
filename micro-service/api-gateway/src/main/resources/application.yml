@@ -1,0 +1,14 @@
+server:
+  port: 9400
+spring:
+  application:
+    name: api-gateway
+  profiles:
+    active: study
+  cloud:
+    gateway:
+      routes:
+        - id: route_baidu
+          uri: https://www.baidu.com/
+          predicates:
+            - Path=/*

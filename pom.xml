@@ -25,6 +25,7 @@
         <module>component-redis</module>
         <module>java-memory-test</module>
         <module>micro-service</module>
+        <module>leecode</module>
     </modules>
 
     <properties>
