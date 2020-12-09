@@ -9,8 +9,6 @@ import me.zhaotb.leecode.day20201203.LinkedNumber.ListNode;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 /**
  * @author zhaotangbo
  * @since 2020/12/3
@@ -79,40 +77,40 @@ public class ExecuteDay20201203Test {
         MidNumber midNumber = new MidNumber();
         int[] nums1 = new int[]{1, 2};
         int[] nums2 = new int[]{3, 4};
-        Assert.assertEquals(2.5, midNumber.findMedianSortedArrays3(nums1, nums2), 0);
-        Assert.assertEquals(2.5, midNumber.findMedianSortedArrays3(nums2, nums1), 0);
+        Assert.assertEquals(2.5, midNumber.findMedianSortedArrays2(nums1, nums2), 0);
+        Assert.assertEquals(2.5, midNumber.findMedianSortedArrays2(nums2, nums1), 0);
 
         int[] nums3 = new int[]{};
         int[] nums4 = new int[]{1};
-        Assert.assertEquals(1, midNumber.findMedianSortedArrays3(nums3, nums4), 0);
+        Assert.assertEquals(1, midNumber.findMedianSortedArrays2(nums3, nums4), 0);
 
         int[] nums5 = new int[]{0, 0, 0, 0, 0};
-        int[] nums6 = new int[]{-1, 0, 0, 0, 0, 0, 1};
-        Assert.assertEquals(0, midNumber.findMedianSortedArrays3(nums5, nums6), 0);
+        int[] nums6 = new int[]{-1, 0, 0, 0, 0, 1, 1};
+        Assert.assertEquals(0, midNumber.findMedianSortedArrays2(nums5, nums6), 0);
 
         int[] nums7 = new int[]{-1, 0, 0, 0, 1};
         int[] nums8 = new int[]{0, 0, 0, 0, 0, 0, 0};
-        Assert.assertEquals(0, midNumber.findMedianSortedArrays3(nums7, nums8), 0);
+        Assert.assertEquals(0, midNumber.findMedianSortedArrays2(nums7, nums8), 0);
 
         int[] nums9 = new int[]{1, 3};
         int[] nums10 = new int[]{2, 7};
-        Assert.assertEquals(2.5, midNumber.findMedianSortedArrays3(nums9, nums10), 0);
+        Assert.assertEquals(2.5, midNumber.findMedianSortedArrays2(nums9, nums10), 0);
 
         int[] nums11 = new int[]{};
         int[] nums12 = new int[]{2, 3};
-        Assert.assertEquals(2.5, midNumber.findMedianSortedArrays3(nums11, nums12), 0);
+        Assert.assertEquals(2.5, midNumber.findMedianSortedArrays2(nums11, nums12), 0);
 
         int[] nums13 = new int[]{};
         int[] nums14 = new int[]{2, 3, 7, 8};
-        Assert.assertEquals(5, midNumber.findMedianSortedArrays3(nums13, nums14), 0);
+        Assert.assertEquals(5, midNumber.findMedianSortedArrays2(nums13, nums14), 0);
 
         int[] nums15 = new int[]{1, 2};
         int[] nums16 = new int[]{-1, 3};
-        Assert.assertEquals(1.5D, midNumber.findMedianSortedArrays3(nums15, nums16), 0);
+        Assert.assertEquals(1.5D, midNumber.findMedianSortedArrays2(nums15, nums16), 0);
 
         int[] nums17 = new int[]{1};
         int[] nums18 = new int[]{2, 3, 4};
-        Assert.assertEquals(2.5D, midNumber.findMedianSortedArrays3(nums17, nums18), 0);
+        Assert.assertEquals(2.5D, midNumber.findMedianSortedArrays2(nums17, nums18), 0);
 
 
     }
