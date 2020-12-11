@@ -26,6 +26,7 @@
         <module>java-memory-test</module>
         <module>micro-service</module>
         <module>leecode</module>
+        <module>web-thymeleaf</module>
     </modules>
 
     <properties>
