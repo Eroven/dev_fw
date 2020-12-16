@@ -23,48 +23,35 @@ package me.zhaotb.leecode.day20201210;
  */
 public class MaxArea {
 
-    private static final char ZERO = '0';
-
     public int maximalSquare(char[][] matrix) {
-
+        char one = '1';
+        int wide = matrix.length;
+        int height = matrix[0].length;
         int max = 0;
-
-        int x = 0;
-        int y = 0;
-        while (possibleMax(matrix, x, y) > max){
-            if (matrix[x][y] == ZERO){
-
+        int[][] dp = new int[wide][height];
+        for (int i = 0; i < wide; i++) {
+            if (matrix[i][0] == one) {
+                dp[i][0] = 1;
+                max = 1;
             }
-
         }
-
-
-        return 0;
-    }
-
-    private int max(char[][] matrix, int x, int y) {
-        if (matrix[x][y] == ZERO){
-            int max1 = max(matrix, x + 1, y);
-            int max2 = max(matrix, x, y + 1);
-            return Math.max(max1, max2);
-        } else {
-            int area = 1;
-            int possibleMax = possibleMax(matrix, x, y);
-            for (int i = 0; i < possibleMax; i++) {
-                if (matrix[x + 1][y] != ZERO && matrix[x][y + 1] != ZERO && matrix[x+1][y+1] != ZERO){
-                    area = 4;
+        for (int i = 0; i < height; i++) {
+            if (matrix[0][i] == one) {
+                dp[0][i] = 1;
+                max = 1;
+            }
+        }
+        for (int i = 1; i < wide; i++) {
+            for (int j = 1; j < height; j++) {
+                if (matrix[i][j] == one) {
+                    dp[i][j] = Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1])) + 1;
+                    if (dp[i][j] > max) max = dp[i][j];
                 }
 
             }
         }
-        return 0;
-    }
 
-
-    private int possibleMax(char[][] matrix, int x, int y) {
-        int xLeft = matrix.length - x;
-        int yLeft = matrix[0].length - y;
-        return Math.min(xLeft, yLeft);
+        return max * max;
     }
 
 
