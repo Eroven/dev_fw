@@ -4,4 +4,8 @@ spring:
   thymeleaf:
     enabled: true
 
+jwt:
+  secret: abcdefghijkmpl
+  pattern: /file/*
+
 savePath: /F:/tmp/saveFiles/
