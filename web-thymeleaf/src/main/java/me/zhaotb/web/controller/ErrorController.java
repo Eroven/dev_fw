@@ -1,4 +1,4 @@
-package me.zhaotb.web;
+package me.zhaotb.web.controller;
 
 
 import org.springframework.stereotype.Controller;

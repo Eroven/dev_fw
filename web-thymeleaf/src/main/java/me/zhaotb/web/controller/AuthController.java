@@ -1,11 +1,13 @@
-package me.zhaotb.web;
+package me.zhaotb.web.controller;
 
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import me.zhaotb.web.dto.CommonResponse;
+import me.zhaotb.web.dto.JWTConfig;
 import me.zhaotb.web.dto.User;
 import me.zhaotb.web.util.CRFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -27,8 +29,8 @@ import java.util.Date;
 @RequestMapping("unAuth")
 public class AuthController {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    @Autowired
+    private JWTConfig jwtConfig;
 
     @RequestMapping("view")
     public String view(){
@@ -40,14 +42,14 @@ public class AuthController {
     public CommonResponse login(String user, String password){
         if ("123456".equals(password)) {
             Calendar instance = Calendar.getInstance();
-            instance.add(Calendar.MINUTE, 5);//5分钟后过期
+            instance.add(Calendar.SECOND, jwtConfig.getExpire());//5分钟后过期
 
             String compact = Jwts.builder()
                     .setSubject(user)
                     .setIssuedAt(new Date())
                     .setExpiration(instance.getTime())
                     .addClaims(Collections.singletonMap("meunList", Arrays.asList("/HelloUser", "/OrderManage")))
-                    .signWith(SignatureAlgorithm.HS256, secret)
+                    .signWith(SignatureAlgorithm.HS256, jwtConfig.getSecret())
                     .compact();
             return CRFactory.okData(compact);
         }

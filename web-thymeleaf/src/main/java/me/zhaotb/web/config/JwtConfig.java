@@ -1,4 +1,4 @@
-package me.zhaotb.web;
+package me.zhaotb.web.config;
 
 
 import io.jsonwebtoken.Claims;
@@ -6,9 +6,10 @@ import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
+import me.zhaotb.web.dto.JWTConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,19 +32,17 @@ import java.io.IOException;
 @Configuration
 public class JwtConfig {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    @Autowired
+    private JWTConfig jwtConfig;
 
     @Bean
-    public FilterRegistrationBean jwtFilterRegistrationBean(@Qualifier("jwtFilter") Filter jwtFilter, @Value("${jwt.pattern:}")String pattern){
-        if (StringUtils.isBlank(pattern)) return null;
-
+    public FilterRegistrationBean jwtFilterRegistrationBean(@Qualifier("jwtFilter") Filter jwtFilter){
+        if (jwtConfig.getPatterns() == null || jwtConfig.getPatterns().size() < 1) return null;
         FilterRegistrationBean<Filter> filter = new FilterRegistrationBean<>();
         filter.setFilter(jwtFilter);
-        for (String pat : pattern.split(",")) {
+        for (String pat : jwtConfig.getPatterns()) {
             filter.addUrlPatterns(pat.trim());
         }
-
         return filter;
     }
 
@@ -65,7 +64,7 @@ public class JwtConfig {
             }
             try {
                 token = token.split(" ")[1];
-                parser.setSigningKey(secret);
+                parser.setSigningKey(jwtConfig.getSecret());
                 Jwt jwt = parser.parse(token);
                 Claims claims = (Claims)jwt.getBody();
                 log.debug("claims: {}", claims);

@@ -1,4 +1,4 @@
-package me.zhaotb.web;
+package me.zhaotb.web.controller;
 
 import me.zhaotb.web.dto.CommonResponse;
 import me.zhaotb.web.dto.Order;

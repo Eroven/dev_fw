@@ -1,4 +1,4 @@
-package me.zhaotb.web;
+package me.zhaotb.web.config;
 
 
 import org.springframework.boot.web.server.ErrorPage;
