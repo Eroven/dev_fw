@@ -7,13 +7,11 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.Nullable;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.Filter;
@@ -42,7 +40,9 @@ public class JwtConfig {
 
         FilterRegistrationBean<Filter> filter = new FilterRegistrationBean<>();
         filter.setFilter(jwtFilter);
-        filter.addUrlPatterns(pattern.split(","));
+        for (String pat : pattern.split(",")) {
+            filter.addUrlPatterns(pat.trim());
+        }
 
         return filter;
     }
@@ -69,6 +69,10 @@ public class JwtConfig {
                 Jwt jwt = parser.parse(token);
                 Claims claims = (Claims)jwt.getBody();
                 log.debug("claims: {}", claims);
+                if (claims.getExpiration().getTime() < System.currentTimeMillis()) {
+                    ((HttpServletResponse)response).sendError(401, "授权过期");
+                    return;
+                }
                 String user = claims.getSubject();
                 req.setAttribute("userCode", user);
             } catch (Exception e){

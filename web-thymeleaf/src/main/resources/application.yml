@@ -1,11 +1,13 @@
 server:
-  port: 8080
+  port: 18080
 spring:
   thymeleaf:
     enabled: true
+  profiles:
+    active: dev
 
 jwt:
   secret: abcdefghijkmpl
-  pattern: /file/*
+  pattern: "/test/*, /file/*"
 
 savePath: /F:/tmp/saveFiles/

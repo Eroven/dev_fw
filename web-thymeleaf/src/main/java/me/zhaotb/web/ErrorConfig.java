@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
  * @author zhaotangbo
  * @since 2020/12/17
  */
-@Configuration
+//@Configuration
 public class ErrorConfig implements ErrorPageRegistrar {
 
 
