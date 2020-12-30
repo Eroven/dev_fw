@@ -9,6 +9,23 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  datasource:
+    url: jdbc:mysql://172.16.52.69:3306/ztb?connectTimeout=60000&socketTimeout=60000&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: 123456
+    driver-class-name: "com.mysql.cj.jdbc.Driver"
+    hikari:
+      connection-test-query: "select 1"
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: 1170851768@qq.com
+    password: ovrndqbgurrdgicd
+    default-encoding: utf-8
+  redis:
+    host: 132.126.3.232
+    port: 6379
+    password: 123456
 
 jwt:
   secret: abcdefghijkmpl

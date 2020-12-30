@@ -1,65 +1,71 @@
 package me.zhaotb.web.controller;
 
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import me.zhaotb.web.dto.CommonResponse;
-import me.zhaotb.web.dto.JWTConfig;
-import me.zhaotb.web.dto.User;
+import me.zhaotb.web.dto.account.RegisterAccount;
+import me.zhaotb.web.dto.account.UserAccount;
+import me.zhaotb.web.dto.account.UserInfo;
+import me.zhaotb.web.service.EmailService;
+import me.zhaotb.web.service.RegisterException;
+import me.zhaotb.web.service.UserService;
 import me.zhaotb.web.util.CRFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-
 /**
  * @author zhaotangbo
  * @since 2020/12/17
  */
+@SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
 @Controller
 @RequestMapping("unAuth")
 public class AuthController {
 
     @Autowired
-    private JWTConfig jwtConfig;
+    private UserService userService;
+
+    @Autowired
+    private EmailService emailService;
 
     @RequestMapping("view")
     public String view(){
         return "login";
     }
 
-    @RequestMapping(value = "login", method = RequestMethod.GET)
-    @ResponseBody
-    public CommonResponse login(String user, String password){
-        if ("123456".equals(password)) {
-            Calendar instance = Calendar.getInstance();
-            instance.add(Calendar.SECOND, jwtConfig.getExpire());//5分钟后过期
-
-            String compact = Jwts.builder()
-                    .setSubject(user)
-                    .setIssuedAt(new Date())
-                    .setExpiration(instance.getTime())
-                    .addClaims(Collections.singletonMap("meunList", Arrays.asList("/HelloUser", "/OrderManage")))
-                    .signWith(SignatureAlgorithm.HS256, jwtConfig.getSecret())
-                    .compact();
-            return CRFactory.okData(compact);
-        }
-        return CRFactory.error();
-    }
 
     @RequestMapping(value = "login", method = RequestMethod.POST)
     @ResponseBody
-    public CommonResponse login(@RequestBody User user) {
-        return login(user.getUser(), user.getPassword());
+    public CommonResponse login(@RequestBody UserAccount account) {
+        String jwt = userService.login(account);
+        if (jwt == null) {
+            return CRFactory.errorMsg("账号或密码错误");
+        } else {
+            return CRFactory.okData(jwt);
+        }
+    }
+
+    @RequestMapping(value = "authCode", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResponse authCode(@RequestBody UserAccount account) {
+        userService.sendAuthCode(account);
+        return CRFactory.ok();
+    }
+
+    @RequestMapping(value = "register", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResponse register(@RequestBody RegisterAccount account) {
+        try {
+            userService.register(account);
+        } catch (RegisterException.DuplicateNickNameException e) {
+            return  CRFactory.DUP_NICK_NAME;
+        } catch (RegisterException.InvalidAuthCodeException e) {
+            return  CRFactory.errorMsg("无效验证码");
+        }
+        return CRFactory.ok();
     }
 
 }
