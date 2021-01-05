@@ -1,0 +1,70 @@
+{
+  "groups": [
+    {
+      "name": "file.pre-path",
+      "type": "me.zhaotb.web.config.FilePathConfig",
+      "sourceType": "me.zhaotb.web.config.FilePathConfig"
+    },
+    {
+      "name": "jwt",
+      "type": "me.zhaotb.web.config.JwtConfig",
+      "sourceType": "me.zhaotb.web.config.JwtConfig"
+    },
+    {
+      "name": "seq",
+      "type": "me.zhaotb.web.config.SequenceRegisterConfig",
+      "sourceType": "me.zhaotb.web.config.SequenceRegisterConfig"
+    }
+  ],
+  "properties": [
+    {
+      "name": "file.pre-path.id-card",
+      "type": "java.lang.String",
+      "description": "实名信息照片路径",
+      "sourceType": "me.zhaotb.web.config.FilePathConfig"
+    },
+    {
+      "name": "file.pre-path.profile-photo",
+      "type": "java.lang.String",
+      "description": "头像路径",
+      "sourceType": "me.zhaotb.web.config.FilePathConfig"
+    },
+    {
+      "name": "file.pre-path.profile-qualifier",
+      "type": "java.lang.String",
+      "description": "头像挂件路径",
+      "sourceType": "me.zhaotb.web.config.FilePathConfig"
+    },
+    {
+      "name": "file.pre-path.video",
+      "type": "java.lang.String",
+      "description": "视频路径",
+      "sourceType": "me.zhaotb.web.config.FilePathConfig"
+    },
+    {
+      "name": "jwt.expire",
+      "type": "java.lang.Integer",
+      "description": "AccessToken有效时长（秒）",
+      "sourceType": "me.zhaotb.web.config.JwtConfig",
+      "defaultValue": 0
+    },
+    {
+      "name": "jwt.patterns",
+      "type": "java.util.List<java.lang.String>",
+      "description": "匹配需要校验的链接.注意前后不要留空格。与servlet的pattern格式一致，支持*通配",
+      "sourceType": "me.zhaotb.web.config.JwtConfig"
+    },
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "description": "密钥",
+      "sourceType": "me.zhaotb.web.config.JwtConfig"
+    },
+    {
+      "name": "seq.configs",
+      "type": "java.util.Map<java.lang.String,me.zhaotb.web.config.SequenceConfig>",
+      "sourceType": "me.zhaotb.web.config.SequenceRegisterConfig"
+    }
+  ],
+  "hints": []
+}

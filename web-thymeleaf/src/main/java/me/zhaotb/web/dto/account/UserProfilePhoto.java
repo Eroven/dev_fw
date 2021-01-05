@@ -8,23 +8,25 @@ import javax.persistence.Table;
 import java.util.Date;
 
 /**
- * 用户基本信息
+ * 头像和挂件
  * @author zhaotangbo
- * @since 2020/12/30
+ * @date 2021/1/5
  */
 @Data
-@Table(name = "user_info")
-public class UserInfo {
+@Table(name = "user_profile_photo")
+public class UserProfilePhoto {
 
     private Long id;
     @OneToOne(targetEntity = UserAccount.class)
     private Long uaId;
-    private String nickName;
-    private Date birthday;
     /**
-     * -1 保密； 0 女； 1 男； 2 其他
+     * 头像路径
      */
-    private Integer sex = -1;
-    private String signature;
+    private String path;
+    /**
+     * 挂件路径
+     */
+    private String qualifier;
+    private Date updateTime;
 
 }

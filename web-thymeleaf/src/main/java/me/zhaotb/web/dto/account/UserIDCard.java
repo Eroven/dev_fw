@@ -12,16 +12,25 @@ import javax.persistence.Table;
  * @since 2020/12/29
  */
 @Data
-@Table(name = "id_card")
-public class IDCard {
+@Table(name = "user_id_card")
+public class UserIDCard {
 
     private Long id;
     @OneToOne(targetEntity = UserAccount.class)
     private Long uaId;
-    private String type;//类型： 100 身份证；
+    /**
+     * 类型： 100 身份证；
+     */
+    private String type;
     private String number;
     private String realName;
-    private String frontPhoto;//正面照片路径
-    private String backPhoto;//背面照片路径
+    /**
+     * 正面照片路径
+     */
+    private String frontPhoto;
+    /**
+     * 背面照片路径
+     */
+    private String backPhoto;
 
 }

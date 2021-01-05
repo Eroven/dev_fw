@@ -1,13 +1,19 @@
 package me.zhaotb.web;
 
 
+import com.alibaba.fastjson.JSONObject;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.TextCodec;
+import me.zhaotb.web.dto.account.UserDto;
+import me.zhaotb.web.dto.account.UserInfo;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 
 /**
@@ -21,14 +27,24 @@ public class SimpleTest {
     @Test
     public void testCreateJwt(){
 
-        String user = "admin2";
+        UserDto userDto = new UserDto();
+        UserInfo userInfo = new UserInfo();
+        userInfo.setNickName("aaa");
+        userDto.setUserInfo(userInfo);
+        userDto.setCreateTime(System.currentTimeMillis());
+        userDto.setExpiredTime(System.currentTimeMillis());
         String compact = Jwts.builder()
-                .setSubject(user)
-                .setIssuedAt(new Date())
+                .setPayload(JSONObject.toJSONString(userDto))
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
 
         System.out.println(compact);
+
+        JwtParser parser = Jwts.parser();
+        parser.setSigningKey(secret);
+        Jwt jwt = parser.parse(compact);
+        System.out.println(jwt.getBody());
+        System.out.println(TextCodec.BASE64URL.decodeToString(compact.split("\\.")[1]));
     }
 
     @Test

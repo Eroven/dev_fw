@@ -17,9 +17,22 @@ public class RegisterException extends RuntimeException {
         }
     }
 
-    public static class InvalidAuthCodeException extends RegisterException {
+    public static class NeedNotRollbackException extends RegisterException {
+        public NeedNotRollbackException(String message) {
+            super(message);
+        }
+    }
+
+    public static class InvalidAuthCodeException extends NeedNotRollbackException {
         public InvalidAuthCodeException(String message) {
             super(message);
         }
     }
+
+    public static class AlreadyRegisterException extends NeedNotRollbackException {
+        public AlreadyRegisterException(String message) {
+            super(message);
+        }
+    }
+
 }

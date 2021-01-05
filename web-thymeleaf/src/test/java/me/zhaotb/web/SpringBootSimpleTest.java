@@ -1,6 +1,8 @@
 package me.zhaotb.web;
 
 
+import me.zhaotb.web.config.SequenceConfig;
+import me.zhaotb.web.config.SequenceRegisterConfig;
 import me.zhaotb.web.dto.account.UserAccount;
 import me.zhaotb.web.service.UserService;
 import org.junit.Test;
@@ -42,5 +44,13 @@ public class SpringBootSimpleTest {
         account.setEmail("123");
         account.setPassword("123");
         userService.login(account);
+    }
+
+    @Autowired
+    private SequenceRegisterConfig sequenceConfig;
+
+    @Test
+    public void testConfig(){
+        System.out.println(sequenceConfig.getConfigs());
     }
 }

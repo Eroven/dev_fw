@@ -1,27 +1,29 @@
 package me.zhaotb.web.service;
 
 
+import com.alibaba.fastjson.JSONObject;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
-import me.zhaotb.web.dto.JWTConfig;
+import me.zhaotb.web.config.JwtConfig;
+import me.zhaotb.web.config.Tables;
 import me.zhaotb.web.dto.account.RegisterAccount;
 import me.zhaotb.web.dto.account.UserAccount;
+import me.zhaotb.web.dto.account.UserDto;
 import me.zhaotb.web.dto.account.UserInfo;
 import me.zhaotb.web.util.CRFactory;
-import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -43,16 +45,27 @@ public class UserService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private SequenceService sequenceService;
+
     private static final String AUTH_CODE_PREFIX = "email::auth::";
 
+    private static final int DEFAULT_EXPIRE_MINUTES = 3;
+
+    private int expireMinutes = DEFAULT_EXPIRE_MINUTES;
+
     @Autowired
-    private JWTConfig jwtConfig;
+    private JwtConfig jwtConfig;
+
+    public void setExpireMinutes(int expireMinutes) {
+        this.expireMinutes = expireMinutes;
+    }
 
     public void sendAuthCode(UserAccount account) {
         if (StringUtils.isNotBlank(account.getEmail())) {
             try {
-                String authCode = emailService.sendAuthCode(account.getEmail());
-                redisTemplate.opsForValue().set(AUTH_CODE_PREFIX + account.getEmail(), authCode, 3, TimeUnit.MINUTES);
+                String authCode = emailService.sendAuthCode(account.getEmail(), expireMinutes);
+                redisTemplate.opsForValue().set(AUTH_CODE_PREFIX + account.getEmail(), authCode, expireMinutes, TimeUnit.MINUTES);
             } catch (Exception e){
                 log.error("发送验证码到邮箱失败：" + account.getEmail(), e);
             }
@@ -61,24 +74,63 @@ public class UserService {
         }
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Throwable.class, noRollbackFor = {RegisterException.NeedNotRollbackException.class, IllegalArgumentException.class})
     public void register(RegisterAccount account) {
+        Long uaId;
         if (StringUtils.isNotBlank(account.getEmail())) {
-            String tmp = redisTemplate.opsForValue().get(AUTH_CODE_PREFIX + account.getEmail());
-            if (StringUtils.isBlank(tmp) || !tmp.equals(account.getAuthCode())) {
-                throw new RegisterException.InvalidAuthCodeException(account.getNickName());
-            }
-            jdbcTemplate.update("insert into user_account(`password`, email) values (?, ?)", account.getPassword(), account.getEmail());
+            validateAccount(account.getEmail());
+            uaId = validateAuthCode(account.getEmail(), account.getAuthCode());
+            jdbcTemplate.update("insert into user_account(id, `password`, email) values (?, ?, ?)",
+                    uaId, account.getPassword(), account.getEmail());
+        } else if (StringUtils.isNotBlank(account.getPhoneNumber())) {
+            validateAccount(account.getPhoneNumber());
+            uaId = validateAuthCode(account.getPhoneNumber(), account.getAuthCode());
+            jdbcTemplate.update("insert into user_account(`password`, phone_number) values (?, ?)",
+                    account.getPassword(), account.getPhoneNumber());
         } else {
-            jdbcTemplate.update("insert into user_account(`password`, phone_number) values (?, ?)", account.getPassword(), account.getPhoneNumber());
+            throw new IllegalArgumentException("邮箱和电话号码均为空");
         }
         try {
-            jdbcTemplate.update("insert into user_info(nick_name) values (?)", account.getNickName());
-        } catch (Exception e) {
+            jdbcTemplate.update("insert into user_info(ua_id, nick_name) values (?, ?)", uaId, account.getNickName());
+        } catch (DuplicateKeyException e) {
             log.error(CRFactory.DUP_NICK_NAME + account.getNickName(), e);
             throw new RegisterException.DuplicateNickNameException(account.getNickName());
+        } catch (Exception e) {
+            log.error("新建用户信息", e);
+            //SQL 执行异常，抛出异常执行回滚操作
+            throw e;
         }
     }
+
+    /**
+     * 校验验证码
+     * @param accountKey 邮箱或手机号
+     * @param authCode 验证码
+     * @return 校验成功返回user_account主键，否则抛出异常 {@link me.zhaotb.web.service.RegisterException.InvalidAuthCodeException}
+     *
+     */
+    private Long validateAuthCode(String accountKey, String authCode) {
+        String tmp = redisTemplate.opsForValue().get(AUTH_CODE_PREFIX + accountKey);
+        if (StringUtils.isBlank(tmp) || !tmp.equals(authCode)) {
+            throw new RegisterException.InvalidAuthCodeException(authCode);
+        }
+        redisTemplate.delete(AUTH_CODE_PREFIX + accountKey);
+        return sequenceService.next(Tables.User.USER_ACCOUNT);
+    }
+
+    /**
+     * 验证邮箱或电话号码是否已经被注册, 已经注册则抛出异常 {@link RegisterException.AlreadyRegisterException}
+     * @param emailOrPhoneNumber 邮箱或电话号码
+     */
+    public void validateAccount(String emailOrPhoneNumber) {
+        List<Integer> exists = jdbcTemplate.query("select 1 from user_account where email=? or phone_number=?",
+                new Object[]{emailOrPhoneNumber, emailOrPhoneNumber}, new SingleColumnRowMapper<>());
+        if (exists.size() > 0) {
+            throw new RegisterException.AlreadyRegisterException("账号已被注册：" + emailOrPhoneNumber);
+        }
+    }
+
+
 
     /**
      * 根据邮箱密码或者电话号码密码查询用户基本信息
@@ -103,19 +155,20 @@ public class UserService {
             return null;
         }
         Calendar instance = Calendar.getInstance();
-        instance.add(Calendar.SECOND, jwtConfig.getExpire());//过期时间
+        //过期时间
+        instance.add(Calendar.SECOND, jwtConfig.getExpire());
 
+        UserDto dto = new UserDto();
+        dto.setCreateTime(System.currentTimeMillis());
+        dto.setExpiredTime(instance.getTimeInMillis());
+        dto.setUserInfo(userInfo);
         return Jwts.builder()
                 .setSubject(userInfo.getNickName())
-                .setIssuedAt(new Date())
-                .setExpiration(instance.getTime())
-                .addClaims(Collections.singletonMap("meunList", Arrays.asList("/HelloUser", "/OrderManage")))
-                .addClaims(Collections.singletonMap("signature", userInfo.getSignature()))
-                .addClaims(Collections.singletonMap("birthday", userInfo.getBirthday()))
-                .addClaims(Collections.singletonMap("sex", userInfo.getSex()))
+                .setPayload(JSONObject.toJSONString(dto))
                 .signWith(SignatureAlgorithm.HS256, jwtConfig.getSecret())
                 .compact();
     }
+
 
 
 }

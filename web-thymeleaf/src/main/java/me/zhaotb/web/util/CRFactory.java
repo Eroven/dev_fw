@@ -12,7 +12,10 @@ import org.springframework.http.HttpStatus;
  */
 public class CRFactory {
 
-    private static final String E_700 = "700";//后台各种错误通用700，具体某种错误则用 7XX， 16进制，所以总共支持256种解释
+    /**
+     * 后台各种错误通用700，具体某种错误则用 7XX， 16进制，所以总共支持256种解释
+     */
+    private static final String E_700 = "700";
 
     public static final CommonResponse DUP_NICK_NAME = new CommonResponse("710", "昵称重复");
 

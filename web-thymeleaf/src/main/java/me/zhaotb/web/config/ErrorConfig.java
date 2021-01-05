@@ -18,7 +18,8 @@ public class ErrorConfig implements ErrorPageRegistrar {
     @Override
     public void registerErrorPages(ErrorPageRegistry registry) {
 
-        ErrorPage common = new ErrorPage("/error/common");//默认跳转的错误页面
+        //默认跳转的错误页面
+        ErrorPage common = new ErrorPage("/error/common");
         ErrorPage p401 = new ErrorPage(HttpStatus.UNAUTHORIZED, "/error/401");
 
         registry.addErrorPages(common, p401);

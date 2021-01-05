@@ -2,9 +2,11 @@ package me.zhaotb.web.controller;
 
 
 import lombok.extern.slf4j.Slf4j;
+import me.zhaotb.web.config.FilePathConfig;
 import me.zhaotb.web.dto.CommonResponse;
 import me.zhaotb.web.util.CRFactory;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -23,26 +26,26 @@ import java.util.Base64;
  * @author zhaotangbo
  * @since 2020/12/9
  */
-@Controller
+@RestController
 @RequestMapping("/file")
 @Slf4j
 public class UploadFileController {
 
-    @Value("${savePath}")
-    private String savePath;
+    @Autowired
+    private FilePathConfig filePathConfig;
 
-    @RequestMapping("view")
-    public String view(Model model,@RequestAttribute String userCode){
-        model.addAttribute("user", userCode);
-        return "uploadFile";
-    }
+//    @RequestMapping("view")
+//    public String view(Model model,@RequestAttribute String userCode){
+//        model.addAttribute("user", userCode);
+//        return "uploadFile";
+//    }
 
     @RequestMapping("upload")
     @ResponseBody
     public CommonResponse upload(@RequestParam("file") MultipartFile file){
         log.info("{} - {}", file.getOriginalFilename(), file.getSize());
         String encode = Base64.getEncoder().encodeToString(file.getOriginalFilename().getBytes());
-        File localFile = new File(savePath, encode);
+        File localFile = new File(filePathConfig.getVideo(), encode);
         if (!localFile.getParentFile().isDirectory() && localFile.getParentFile().mkdirs()) {
             return CRFactory.errorMsg("创建目录失败");
         }
@@ -57,6 +60,7 @@ public class UploadFileController {
         return CRFactory.okData(encode);
 
     }
+
 
 
 
