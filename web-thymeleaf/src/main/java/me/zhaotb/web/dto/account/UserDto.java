@@ -17,11 +17,11 @@ public class UserDto {
     /**
      * 创建时间
      */
-    private long createTime;
+    private long issuedAt;
     /**
      * 失效时间
      */
-    private long expiredTime;
+    private long expiration;
 
 
 }

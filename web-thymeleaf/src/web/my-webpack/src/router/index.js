@@ -19,11 +19,19 @@ export default new Router({
       path: '/',
       name: 'Layout',
       component: () => import('@/layout/index.vue'),
-      redirect: '/HelloUser',
+      redirect: '/Profile',
       meta: {
-        requireAuth: true
+        requireAuth: false
       },
       children: [
+        {
+          path: '/Profile',
+          name: 'ProfileIndex',
+          component: () => import('@/views/profile/ProfileIndex'),
+          meta: {
+            requireAuth: true
+          }
+        },
         {
           path: '/HelloUser',
           name: 'HelloUser',

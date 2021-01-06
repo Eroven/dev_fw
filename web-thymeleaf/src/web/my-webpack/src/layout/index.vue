@@ -1,10 +1,9 @@
 <template>
   <el-container>  
-    <!-- <el-aside width="200px">Aside</el-aside> -->
     <el-container>
-      <el-header>
-        <menu-nav></menu-nav>
-      </el-header>
+        <el-header>
+          <menu-nav></menu-nav>
+        </el-header>
       <el-main>
         <content-main></content-main>
       </el-main>
@@ -21,24 +20,15 @@ export default {
 </script>
 
 <style scoped>
-.el-aside {
-  background-color: #d3dce6;
-  color: #333;
-  text-align: center;
-  /* line-height: 200px; */
-}
 .el-main {
-  background-color: #e9eef3;
-  color: #333;
   text-align: center;
-  /* line-height: 160px; */
+  margin-top: 55px;
+  padding: 0px;
 }
-.el-header,
-.el-footer {
-  background-color: #b3c0d1;
-  color: #333;
+.el-header {
   text-align: center;
-  /* line-height: 60px; */
+  line-height: 0px;
+  min-height: 100px;
   padding: 0px;
 }
 

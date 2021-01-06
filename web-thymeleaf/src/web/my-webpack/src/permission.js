@@ -8,21 +8,23 @@ import 'nprogress/nprogress.css' // progress bar style
 router.beforeEach((to, from, next) => {
     NProgress.start()
     let token = store.state.token
+    let profile = store.state.profile
     let now = new Date().getTime().toString().substring(0, 10)
-    // console.log("permission: " + to.meta.requireAuth)
-    if (to.meta.requireAuth) {//要求授权
+    if (to.meta.requireAuth) {//要求授权`
         let profile
         if (!token) {
             token = Cache.getToken()
-            store.commit('setToken',token)
+            if (!token || null == token || "null" == token) {
+                next({path: '/Login'})
+                return
+            }
             profile = parseToken(token)
+            store.commit('setToken',token)
             store.commit('setProfile', profile)
-            // store.commit('setNickName', profile.sub)
         } else {
             profile = store.state.profile
         }
-        // console.log(profile)
-        if (!profile || profile.exp <= now) {
+        if (!profile || profile.expiration <= now) {
             next({path: '/Login'})
         } else {
             next()

@@ -9,12 +9,14 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.TextCodec;
 import me.zhaotb.web.dto.account.UserDto;
 import me.zhaotb.web.dto.account.UserInfo;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.Date;
 
 /**
  * @author zhaotangbo
@@ -31,8 +33,8 @@ public class SimpleTest {
         UserInfo userInfo = new UserInfo();
         userInfo.setNickName("aaa");
         userDto.setUserInfo(userInfo);
-        userDto.setCreateTime(System.currentTimeMillis());
-        userDto.setExpiredTime(System.currentTimeMillis());
+        userDto.setIssuedAt(System.currentTimeMillis());
+        userDto.setExpiration(System.currentTimeMillis());
         String compact = Jwts.builder()
                 .setPayload(JSONObject.toJSONString(userDto))
                 .signWith(SignatureAlgorithm.HS256, secret)
@@ -45,6 +47,8 @@ public class SimpleTest {
         Jwt jwt = parser.parse(compact);
         System.out.println(jwt.getBody());
         System.out.println(TextCodec.BASE64URL.decodeToString(compact.split("\\.")[1]));
+        System.out.println(TextCodec.BASE64URL.decodeToString("eyJleHBpcmF0aW9uIjoxNjA5OTIzNTM2NTU1LCJpc3N1ZWRBdCI6MTYwOTgzNzEzNjU1NSwidXNlckluZm8iOnsiaWQiOjIsIm5pY2tOYW1lIjoi5rWL6K-VeiIsInVhSWQiOjEwMDAwMDAwMn19"));
+
     }
 
     @Test
@@ -75,4 +79,15 @@ public class SimpleTest {
             System.out.println();
         }
     }
+
+   @Test
+   public void testImgBase64() throws IOException {
+       FileInputStream input = new FileInputStream(new File("F:\\tmp\\saveFiles\\profilePhoto", "defaultProfile.jpg"));
+       ByteArrayOutputStream output = new ByteArrayOutputStream();
+       int copy = IOUtils.copy(input, output);
+       System.out.println("size: " + copy);
+
+       System.out.println(Base64.getEncoder().encodeToString(output.toByteArray()));
+
+   }
 }

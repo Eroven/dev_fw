@@ -3,25 +3,18 @@
     <div class="top-banner">
       <img src="../../assets/top.png" />
     </div>
-    <el-row type="flex" justify="center" align="middle">
-      <el-col :span="3"><div>&nbsp;</div></el-col>
-      <el-col :span="18" style="">
+    <div class="middle">
         <el-divider content-position="center" ><span class="tip">登录</span></el-divider>
-      </el-col>
-      <el-col :span="3"><div>&nbsp;</div></el-col>
-    </el-row>
-    <el-row class="mid-container" type="flex" justify="center">
-      <el-col :span="3"><div>&nbsp;</div></el-col>
-      <el-col :span="8" >
-        <img src="../../assets/login-img.png" />
-      </el-col>
-      <el-col :span="2">
-        <div class="mid-divider">
-          <el-divider direction="vertical" class="mid-divider"></el-divider>
-        </div>
-      </el-col>
-      <el-col :span="8">
-        <div class="login-data">
+    </div>
+    <div class="login-box">
+      <div class="login-left">
+        <img  class="login-img" src="../../assets/login-img.png" />
+      </div>
+      <div>
+        <el-divider direction="vertical" class="mid-divider"></el-divider>
+      </div>
+      <div class="login-right">
+          <div class="login-data">
             <el-form
               :model="ruleForm"
               status-icon
@@ -62,9 +55,8 @@
               </el-form-item>
             </el-form>
           </div>
-      </el-col>
-      <el-col :span="3"><div>&nbsp;</div></el-col>
-    </el-row>
+      </div>
+    </div>
 </div>
 </template>
 
@@ -111,15 +103,9 @@ export default {
                   if ("200" === data.status) {
                     let token = data.data
                     Cache.setToken(token)
-                    this.$store.commit('setToken',token)
-                    let profile = parseToken(token)
-                    this.$store.commit('setProfile', profile)
-                    // this.$store.commit('setNickName', profile.sub)
-                    console.log("login -> profile:")
-                    console.log(profile)
-                    console.log(this.$store.getters.profile)
-                    console.log(this.$store.getters.nickName)
-                    console.log(this.$store.state.token)
+                    if (this.rememberMe) {
+                      Cache.rememberToken(token)
+                    }
                     this.$router.push("/")
                   } else {
                     this.$message({
@@ -130,7 +116,11 @@ export default {
                   }
                 }).finally(() => this.login = false)
         } else {
-          console.log("error submit!!");
+          this.$message({
+                      showClose: true,
+                      message: '请填写相关信息',
+                      type: 'warning'
+                    });
           return false;
         }
       })
@@ -158,21 +148,43 @@ export default {
 .tip {
   font-size: 38px;
 }
-.mid-container {
-  height: 460px;
-  margin-top: 20px;
+.middle {
+    width: 980px;
+    margin: 0px auto;
+}
+.login-box {
+  position: relative;
+  display: flex;
+  width: 980px;
+  margin: 40px auto;
+}
+.log-left {
+  padding: 10px;
+  width: 489px;
+}
+.login-img {
+  width: 480px;
 }
 .mid-divider {
-  height: 460px;
+  height: 400px;
   text-align: center;
 }
-
+.login-right {
+  margin-left: 40px;
+  width: 460px;
+}
 .login-data {
   text-align: center;
-  height: 100%;
-  width: 100%;
+  width: 400px;
   margin-top: 100px;
 }
+
+.mid-container {
+  height: 460px;
+  min-width: 1080px;
+  margin-top: 20px;
+}
+
 .remember-me {
   text-align: left;
   position: relative;
@@ -183,6 +195,7 @@ export default {
   margin-left: 10px;
 }
 .btn {
-  width: 265px;
+  float: left;
+  width: 190px;
 }
 </style>

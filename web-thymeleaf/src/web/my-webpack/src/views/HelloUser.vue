@@ -81,7 +81,14 @@
       </li>
     </ul>
 
-
+    <div>
+      <el-badge :value="3">
+              <span>消息</span>
+      </el-badge>
+      <el-badge :value="3">
+              <span>消息</span>
+      </el-badge>
+    </div>
   </div>
 </template>
 

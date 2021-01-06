@@ -2,13 +2,11 @@ package me.zhaotb.web.config;
 
 
 import com.alibaba.fastjson.JSONObject;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.impl.TextCodec;
 import lombok.extern.slf4j.Slf4j;
 import me.zhaotb.web.dto.account.UserDto;
-import me.zhaotb.web.dto.account.UserInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,17 +67,14 @@ public class JwtFilterConfig {
             try {
                 token = token.split(" ")[1];
                 parser.setSigningKey(jwtConfig.getSecret());
-                Jwt jwt = parser.parse(token);
-                jwt.getBody();
-                Claims claims = (Claims) jwt.getBody();
-                log.debug("claims: {}", claims);
-                if (claims.getExpiration().getTime() < System.currentTimeMillis()) {
+                parser.parse(token);
+                String payload = TextCodec.BASE64URL.decodeToString(token.split("\\.")[1]);
+                log.debug("payload: {}", payload);
+                UserDto dto = JSONObject.parseObject(payload, UserDto.class);
+                if (dto.getExpiration() < System.currentTimeMillis()) {
                     ((HttpServletResponse) response).sendError(401, "授权过期");
                     return;
                 }
-                String json = claims.get("userInfo", String.class);
-                UserDto dto = new UserDto();
-                dto.setUserInfo(JSONObject.parseObject(json, UserInfo.class));
                 req.setAttribute("userDto", dto);
             } catch (Exception e) {
                 ((HttpServletResponse) response).sendError(401, "无效TOKEN");

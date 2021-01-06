@@ -14,7 +14,7 @@
     </div>
     <div class="register-div">
       <el-form 
-      :v-model="regForm" 
+      :model="regForm" 
       :rules="rules" 
       ref="regForm" 
       >
@@ -32,9 +32,9 @@
             <el-button slot="suffix" size="medium" type="primary" :disabled="getCode" class="code-btn" @click="getAuthCode">点击获取</el-button>
           </el-input>
         </el-form-item>
-        <el-form-item prop="agree">
-          <el-checkbox v-model="regForm.agree" @change="changeAgree">我已同意<el-link type="primary">《哔哩哔哩弹幕网用户使用协议》</el-link>和<el-link type="primary">《哔哩哔哩隐私政策》</el-link></el-checkbox><br>
-          <el-button style="width:420px" :type="regType" @click="onSubmit" :disabled="!regForm.agree">注册</el-button>
+        <el-form-item>
+          <el-checkbox v-model="agree" @change="changeAgree">我已同意<el-link type="primary">《哔哩哔哩弹幕网用户使用协议》</el-link>和<el-link type="primary">《哔哩哔哩隐私政策》</el-link></el-checkbox><br>
+          <el-button style="width:420px" :type="regType" @click="onSubmit" :disabled="!agree">注册</el-button>
         </el-form-item>
          <span class="to-login" @click="routeLogin">已有账号,直接登录&gt;</span>
       </el-form>
@@ -50,11 +50,11 @@ export default {
         nickName: '',
         password: '',
         email: '',
-        authCode: '',
-        agree: false
+        authCode: ''
       },
       regType: '',
       getCode: true,
+      agree: false,
       rules: {
         nickName: [{ validator: this.checkNickName, trigger: "blur", message: "请告诉我你的昵称吧" }],
         password: [{ validator: this.checkPass, trigger: "blur", message: "请输入密码" }],
@@ -66,7 +66,7 @@ export default {
   },
   methods: {
     changeAgree(){
-      if (this.regForm.agree) {
+      if (this.agree) {
         this.regType = "primary"
       } else {
         this.regType = ""
@@ -102,19 +102,29 @@ export default {
       this.$axios.post("/unAuth/authCode", {'email': this.regForm.email })
     },
     onSubmit() {
-      //  this.$refs["regForm"].validate((valid) => {
-          // if (valid) {
+       this.$refs["regForm"].validate((valid) => {
+          if (valid) {
             this.$axios.post("/unAuth/register", {
               nickName: this.regForm.nickName,
               password: this.regForm.password,
               email: this.regForm.email,
               authCode: this.regForm.authCode
+              }).then(resp => {
+                console.log(resp)
+                let data = resp.data
+                if ("200" == data.status) {
+                  this.$router.push("/")
+                }
               })
-          // } else {
-            // console.log('error submit!!');
-            // return false;
-          // }
-        // });
+          } else {
+            this.$message({
+                      showClose: true,
+                      message: '请填写相关信息',
+                      type: 'warning'
+                    });
+            return false;
+          }
+        });
     },
     routeLogin() {
       this.$router.push("/Login")

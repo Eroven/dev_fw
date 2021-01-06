@@ -20,6 +20,11 @@ public class FilePathConfig {
     private String profilePhoto;
 
     /**
+     * 默认头像文件名
+     */
+    private String defaultProfilePhoto;
+
+    /**
      * 头像挂件路径
      */
     private String profileQualifier;

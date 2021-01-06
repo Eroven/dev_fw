@@ -6,13 +6,12 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        profile: {},
-        token: ''
+        profile: undefined,
+        token: undefined
     },
     mutations: {
         setToken(state, token) {
             state.token = token
-            Cache.setToken(token)
         },
         setProfile(state, profile) {
             state.profile = profile
@@ -21,8 +20,8 @@ export default new Vuex.Store({
         //     state.nickName = nickName
         // },
         logout(state){
-            state.profile = undefined
-            token = ''
+            state.profile = ''
+            state.token = ''
             Cache.cleanToken()
         }
     },
@@ -31,7 +30,7 @@ export default new Vuex.Store({
             return state.profile
         },
         nickName(state) {
-            return state.profile.sub
+            return state.profile.userInfo.nickName
         }
     }
 })

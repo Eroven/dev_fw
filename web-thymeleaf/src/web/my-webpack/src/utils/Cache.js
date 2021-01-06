@@ -8,12 +8,12 @@ const ss = window.sessionStorage
 export default {
     setToken(token) {
         ss.setItem(tokenKey, token)
-        if (ls.getItem(rememberMe)) {
-            ls.setItem(tokenKey, token)
-        }
     },
     getToken() {
-        return  ss.getItem(tokenKey) || ls.getItem(tokenKey)
+        return  ss.getItem(tokenKey) || ls.getItem(tokenKey) 
+    },
+    rememberToken(token) {
+        ls.setItem(tokenKey, token)
     },
     cleanToken() {
         ss.removeItem(tokenKey)

@@ -18,6 +18,12 @@
   ],
   "properties": [
     {
+      "name": "file.pre-path.default-profile-photo",
+      "type": "java.lang.String",
+      "description": "默认头像文件名",
+      "sourceType": "me.zhaotb.web.config.FilePathConfig"
+    },
+    {
       "name": "file.pre-path.id-card",
       "type": "java.lang.String",
       "description": "实名信息照片路径",

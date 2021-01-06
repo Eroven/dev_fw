@@ -45,4 +45,5 @@ seq:
 
 file:
   pre-path:
-    profile-photo: /F:/tmp/saveFiles/profilePhoto
+    profile-photo: "/F:/tmp/saveFiles/profilePhoto"
+    default-profile-photo: "defaultProfile.jpg"
