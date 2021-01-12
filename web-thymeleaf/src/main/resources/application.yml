@@ -1,10 +1,10 @@
 server:
   port: 18080
 spring:
-  thymeleaf:
-    enabled: true
   profiles:
     active: dev
+  jackson:
+    default-property-inclusion: non_null
   servlet:
     multipart:
       max-file-size: 100MB
@@ -33,6 +33,7 @@ jwt:
   patterns:
     - "/test/*"
     - "/file/*"
+    - "/user/*"
 
 seq:
   configs:
@@ -40,6 +41,9 @@ seq:
       start: 100000000
       step: 1
     user_info:
+      start: 1
+      step: 1
+    user_profile_photo:
       start: 1
       step: 1
 

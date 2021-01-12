@@ -4,7 +4,6 @@ package me.zhaotb.web.controller;
 import me.zhaotb.web.dto.CommonResponse;
 import me.zhaotb.web.dto.account.RegisterAccount;
 import me.zhaotb.web.dto.account.UserAccount;
-import me.zhaotb.web.dto.account.UserInfo;
 import me.zhaotb.web.service.EmailService;
 import me.zhaotb.web.service.RegisterException;
 import me.zhaotb.web.service.UserService;
@@ -27,9 +26,6 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private EmailService emailService;
 
     @RequestMapping("view")
     public String view(){

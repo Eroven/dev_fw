@@ -26,5 +26,6 @@ public class UserInfo {
      */
     private Integer sex = -1;
     private String signature;
+    private Date createTime;
 
 }

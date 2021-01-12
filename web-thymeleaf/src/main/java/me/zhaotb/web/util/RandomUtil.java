@@ -2,6 +2,7 @@ package me.zhaotb.web.util;
 
 
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * @author zhaotangbo
@@ -21,6 +22,10 @@ public class RandomUtil {
             sb.append(random.nextInt(10));
         }
         return sb.toString();
+    }
+
+    public static String uuid() {
+        return UUID.randomUUID().toString();
     }
 
 }

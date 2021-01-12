@@ -31,6 +31,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -72,6 +74,11 @@ public class UserService {
         this.expireMinutes = expireMinutes;
     }
 
+    /**
+     * 发送授权码
+     *
+     * @param account 账号信息
+     */
     public void sendAuthCode(UserAccount account) {
         if (StringUtils.isNotBlank(account.getEmail())) {
             try {
@@ -81,7 +88,7 @@ public class UserService {
                 log.error("发送验证码到邮箱失败：" + account.getEmail(), e);
             }
         } else {
-
+            //TODO 手机短信验证码
         }
     }
 
@@ -150,6 +157,7 @@ public class UserService {
      */
     public String login(UserAccount account) {
         UserInfo userInfo;
+        UserAccount userAccount;
         String msg = "";
         try {
             if (StringUtils.isNotBlank(account.getEmail())) {
@@ -166,8 +174,13 @@ public class UserService {
             return null;
         }
         Calendar instance = Calendar.getInstance();
-        //过期时间
-        instance.add(Calendar.SECOND, jwtConfig.getExpire());
+        //过期时间: 月底23点59分59秒. 先设置下个月1号 00:00:00 ,然后减1秒
+        instance.add(Calendar.MONTH, 1);
+        instance.set(Calendar.DAY_OF_MONTH, 1);
+        instance.set(Calendar.HOUR_OF_DAY, 0);
+        instance.set(Calendar.MINUTE, 0);
+        instance.set(Calendar.SECOND, 0);
+        instance.add(Calendar.SECOND, -1);
 
         UserDto dto = new UserDto();
         dto.setIssuedAt(System.currentTimeMillis());
@@ -177,6 +190,27 @@ public class UserService {
                 .setPayload(JSONObject.toJSONString(dto))
                 .signWith(SignatureAlgorithm.HS256, jwtConfig.getSecret())
                 .compact();
+    }
+
+    /**
+     * 更新用户头像
+     *
+     * @param dto  用户信息
+     * @param path 头像路径
+     */
+    public void updateUserPhoto(UserDto dto, String path) {
+        List<Integer> list = jdbcTemplate.queryForList("select 1 from user_profile_photo where ua_id=? ", new Object[]{dto.getUserInfo().getUaId()}, Integer.class);
+        int res;
+        if (list.size() >= 1) {
+            res = jdbcTemplate.update("update user_profile_photo set path=?,update_time=? where ua_id=? ",
+                    path, new Date(), dto.getUserInfo().getUaId());
+        } else {
+             res = jdbcTemplate.update("insert into user_profile_photo(ua_id,path,update_time) values (?,?,?)",
+                    dto.getUserInfo().getUaId(), path, new Date());
+        }
+        if (res != 1) {
+            log.error("预期更新头像生效条数：1， 实际生效条数：{}", res);
+        }
     }
 
     /**
@@ -197,8 +231,14 @@ public class UserService {
                 input = new FileInputStream(new File(filePathConfig.getProfilePhoto(), filePathConfig.getDefaultProfilePhoto()));
                 IOUtils.copy(input, out);
             } else {
-                input = new FileInputStream(new File(filePathConfig.getProfilePhoto(), list.get(0).getPath()));
-                IOUtils.copy(input, out);
+                try {
+                    input = new FileInputStream(new File(filePathConfig.getProfilePhoto(), uaId + "/" + list.get(0).getPath()));
+                    IOUtils.copy(input, out);
+                } catch (Exception e) {
+                    input = new FileInputStream(new File(filePathConfig.getProfilePhoto(), filePathConfig.getDefaultProfilePhoto()));
+                    IOUtils.copy(input, out);
+                    log.error("读取用户配置头像异常：" + list.get(0).getPath() + ", 使用默认头像", e);
+                }
             }
         } catch (IOException e) {
             log.error("读取头像文件异常", e);
@@ -212,6 +252,64 @@ public class UserService {
             }
         }
 
+    }
+
+    public UserInfo getUserInfo(UserDto dto) {
+        try {
+            return jdbcTemplate.queryForObject("select id, ua_id, nick_name, birthday, sex, signature from user_info where id=? "
+                    , new Object[]{dto.getUserInfo().getId()}, new BeanPropertyRowMapper<>(UserInfo.class));
+        } catch (Exception e) {
+            log.error("查询账号信息异常：" + dto.getUserInfo().getId(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 更新用户信息
+     *
+     * @param userInfo 用户信息
+     * @return 小于0，更新失败；等于0未更新；等于1更新成功；等于2，修改了名字
+     */
+    public int updateUserInfo(UserDto dto, UserInfo userInfo) {
+
+        int res = 1;
+        List<Object> args = new LinkedList<>();
+        StringBuilder sql = new StringBuilder("update user_info set ");
+        if (StringUtils.isNotBlank(userInfo.getNickName())) {
+            sql.append(" nick_name=?,");
+            args.add(userInfo.getNickName());
+            res += 1;
+        }
+        if (StringUtils.isNotBlank(userInfo.getSignature())) {
+            sql.append(" signature=?,");
+            args.add(userInfo.getSignature());
+        }
+        if (userInfo.getBirthday() != null) {
+            sql.append(" birthday=?,");
+            args.add(userInfo.getBirthday());
+        }
+        if (userInfo.getSex() != null) {
+            sql.append(" sex=?,");
+            args.add(userInfo.getSex());
+        }
+        if (args.size() < 1) {
+            //没有要更新的字段
+            return 0;
+        }
+        sql.deleteCharAt(sql.length() - 1);
+        sql.append(" where id=?");
+        args.add(dto.getUserInfo().getId());
+
+        try {
+            int update = jdbcTemplate.update(sql.toString(), args.toArray());
+            if (update < 1) {
+                return -1;
+            }
+        } catch (Exception e) {
+            log.error("更新用户信息异常", e);
+            return -1;
+        }
+        return res;
     }
 
 }
