@@ -1,13 +1,18 @@
 package me.zhaotb.util;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import me.zhaotb.framework.util.FileUtil;
 import me.zhaotb.framework.util.OutOfDiskSpaceException;
 import me.zhaotb.framework.util.StringUtil;
 import me.zhaotb.framework.util.ZipUtil;
+import me.zhaotb.framework.util.serialization.protobuf.PersonModel;
 import org.apache.commons.net.ftp.FTPClient;
 import org.junit.Test;
 import sun.misc.BASE64Encoder;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -433,5 +438,27 @@ public class TestUtil {
         System.out.println(b);
     }
 
+    @Test
+    public void testProtocolBuffer() throws IOException {
+        PersonModel.Person.Builder builder = PersonModel.Person.newBuilder();
+        builder.setName("kun kun");
+        builder.setEmail("1054@qq.com");
+        builder.setGender(-1);
+        builder.addAllHobbies(Arrays.asList("唱", "跳"));
+        builder.addHobbies("篮球");
+        PersonModel.Person person = builder.build();
+        System.out.println(person);
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        person.writeTo(buffer);
+        System.out.println(Arrays.toString(buffer.toByteArray()));
+
+        ByteArrayInputStream input = new ByteArrayInputStream(buffer.toByteArray());
+
+        PersonModel.Person parse = PersonModel.Person.parseFrom(input);
+        System.out.println(parse);
+
+
+    }
 
 }
