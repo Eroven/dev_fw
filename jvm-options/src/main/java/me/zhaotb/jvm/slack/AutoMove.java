@@ -33,6 +33,12 @@ public class AutoMove implements Closeable {
     }
 
     @ToString
+    class LeftPixel {
+        double x;
+        double y;
+    }
+
+    @ToString
     class Coor {
         int x;
         int y;
@@ -43,6 +49,7 @@ public class AutoMove implements Closeable {
         }
     }
 
+    @ToString
     class Speed {
         /**
          * 设定，0为向右，1/2 * π 向下
@@ -86,6 +93,11 @@ public class AutoMove implements Closeable {
      */
     private int acceleration;
 
+    /**
+     * 每次移动完剩余的小数
+     */
+    private LeftPixel leftPixel;
+
     public AutoMove() {
     }
 
@@ -95,14 +107,16 @@ public class AutoMove implements Closeable {
         executor.execute(new QuitListener(this::close));
 
         //100毫秒一次
-        final int frequency = 10;
+        final int frequency = 4;
         while (!executor.isShutdown()) {
             if (queue.size() < 2) {
                 queue.offer(randomTarget());
             }
             if (isAround()) {
                 targetCoor = queue.poll();
-                System.out.println(targetCoor);
+                targetCoor.x = 680;
+                targetCoor.y = 840;
+                log.info("currentCoor={}", this.currentCoor);
             }
             computeSpeed();
             move();
@@ -130,6 +144,7 @@ public class AutoMove implements Closeable {
         this.currentCoor = new Coor(maxX / 2, maxY / 2);
         this.currentSpeed = new Speed(0, 0);
         this.acceleration = 1;
+        this.leftPixel = new LeftPixel();
     }
 
     private boolean isAround() {
@@ -138,7 +153,7 @@ public class AutoMove implements Closeable {
         }
 
         return Math.pow(Math.abs(targetCoor.x - currentCoor.x), 2)
-                + Math.pow(Math.abs(targetCoor.y - currentCoor.y), 2) <= 2;
+                + Math.pow(Math.abs(targetCoor.y - currentCoor.y), 2) <= 4;
     }
 
     /**
@@ -151,8 +166,6 @@ public class AutoMove implements Closeable {
             GraphicsConfiguration[] conf = device.getConfigurations();
             for (GraphicsConfiguration c : conf) {
                 Rectangle bounds = c.getBounds();
-                System.out.println(bounds.width);
-                System.out.println(bounds.height);
                 return new int[]{bounds.width, bounds.height};
             }
         }
@@ -219,9 +232,19 @@ public class AutoMove implements Closeable {
                 double newVer = vnValue * Math.sin(coorAngle);
 
                 double newSpeed = Math.sqrt(Math.pow(srcHor + newHor, 2) + Math.pow(srcVer + newVer, 2));
-                double newAngle = Math.atan((srcVer + newVer) / (srcHor + newHor));
-                if (srcHor < newHor) {
-                    newAngle += Math.PI;
+                double newAngle;
+                if (srcHor + newHor >= 0) {
+                    if (srcVer + newVer >= 0) {
+                        newAngle = Math.atan((srcVer + newVer) / (srcHor + newHor));
+                    } else {
+                        newAngle = Math.PI * 2 - Math.atan((srcVer + newVer) / (srcHor + newHor));
+                    }
+                } else {
+                    if (srcVer + newVer >= 0) {
+                        newAngle = Math.PI - Math.atan((srcVer + newVer) / (srcHor + newHor));
+                    } else {
+                        newAngle = Math.PI + Math.atan((srcVer + newVer) / (srcHor + newHor));
+                    }
                 }
                 this.currentSpeed = new Speed(newAngle, newSpeed);
 
@@ -239,10 +262,12 @@ public class AutoMove implements Closeable {
         Speed speed = this.currentSpeed;
         Coor coor = this.currentCoor;
 
-        double x = Math.cos(speed.angle) * speed.value;
-        double y = Math.sin(speed.angle) * speed.value;
-        int expectX = coor.x + (x > 0 ? (int) Math.ceil(x) : (int) Math.floor(x));
-        int expectY = coor.y + (y > 0 ? (int) Math.ceil(y) : (int) Math.floor(y));
+        double x = Math.cos(speed.angle) * speed.value + leftPixel.x;
+        double y = Math.sin(speed.angle) * speed.value + leftPixel.y;
+        leftPixel.x = x - (int)x;
+        leftPixel.x = y - (int)y;
+        int expectX = coor.x + (int)x;
+        int expectY = coor.y + (int)y;
         if (expectX > maxX) {
             expectX = maxX;
         }
@@ -257,17 +282,14 @@ public class AutoMove implements Closeable {
         }
         int tx = coor.x;
         int ty = coor.y;
-        while (expectX > tx || expectY > ty) {
-            sleep(1);
-            if (expectX > tx) {
-                tx = tx + 1;
-            }
-            if (expectY > ty) {
-                ty = ty + 1;
-            }
-            robot.mouseMove(tx, ty);
-            this.currentCoor = new Coor(tx, ty);
+        if (expectX > tx) {
+            tx = tx + 1;
         }
+        if (expectY > ty) {
+            ty = ty + 1;
+        }
+        robot.mouseMove(tx, ty);
+        this.currentCoor = new Coor(tx, ty);
     }
 
     private void sleep(long millis) {
